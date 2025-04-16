@@ -1,61 +1,107 @@
-/* styles.css */
+/* 전체 페이지 스타일 */
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f7fc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
 }
 
 h2 {
     text-align: center;
-    margin-top: 20px;
+    color: #333;
+    margin-bottom: 20px;
 }
 
-.form-container {
+/* 폼 컨테이너 */
+form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 400px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
+/* 입력 그룹 스타일 */
 .input-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .input-group label {
+    font-size: 14px;
+    color: #555;
     display: block;
-    font-weight: bold;
+    margin-bottom: 5px;
 }
 
-.input-group input {
+.input-group input,
+.input-group select {
     width: 100%;
     padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
     margin-top: 5px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
 }
 
+.input-group input:focus,
+.input-group select:focus {
+    border-color: #4e73df;
+    outline: none;
+}
+
+/* 버튼 스타일 */
 button {
-    width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
+    background-color: #4e73df;
     color: white;
+    padding: 12px 20px;
     font-size: 16px;
+    width: 100%;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #3e63c2;
 }
 
+/* 오류 메시지 스타일 */
 .error-message {
     color: red;
     font-size: 14px;
+    margin-top: 10px;
     text-align: center;
+}
+
+/* 회원가입 링크 */
+p {
+    text-align: center;
+    margin-top: 20px;
+}
+
+p a {
+    color: #4e73df;
+    text-decoration: none;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+
+/* 회원가입 버튼과 링크를 수직으로 배치 */
+.form-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.form-footer button {
+    margin-bottom: 10px; /* 회원가입 버튼과 링크 사이에 공간 추가 */
 }
