@@ -29,7 +29,6 @@ public class JoinController {
     @ResponseBody
     public ResponseEntity<Map<String,Object>> joinUser(@RequestBody UserDto userDTO) {
         Map<String, Object> response = new HashMap<>();
-
         try {
             userService.join(userDTO);  // 회원가입 처리
             response.put("success", true);  // 성공

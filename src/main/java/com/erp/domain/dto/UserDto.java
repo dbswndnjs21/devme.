@@ -5,7 +5,6 @@ import com.erp.domain.enums.Role;
 import lombok.*;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

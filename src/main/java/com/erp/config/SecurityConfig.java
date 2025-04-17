@@ -31,6 +31,13 @@ public class SecurityConfig {
                         .loginProcessingUrl("/doLogin")
                         .defaultSuccessUrl("/")
                         .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+//                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll()
                 );
         return http.build();
     }
