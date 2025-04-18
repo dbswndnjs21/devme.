@@ -45,4 +45,12 @@ public class CustomUserDetails implements UserDetails {
     public String getRole(){
         return user.getRole().toString();
     }
+
+    public String getPosition() {
+        return user.getPosition();
+    }
+
+    public String getDepartment() {
+        return user.getDepartment();
+    }
 }

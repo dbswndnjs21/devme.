@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,5 +35,12 @@ public class UserService {
         // UserDTO에서 받은 역할을 Role 엔티티로 변환
 
         userRepository.save(user);
+    }
+
+    public List<UserDto> getUserList() {
+        List<User> userList = userRepository.findAll();
+        return userList.stream()
+                .map(UserDto::new)  // User -> UserDto 변환
+                .collect(Collectors.toList());
     }
 }

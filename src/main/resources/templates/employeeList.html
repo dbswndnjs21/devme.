@@ -1,0 +1,74 @@
+<!-- templates/employee/employee-list.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>직원 관리</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #employeeTable {
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+<h1>직원 목록</h1>
+
+<table id="employeeTable">
+    <thead>
+    <tr>
+        <th>아이디</th>
+        <th>부서</th>
+        <th>직급</th>
+        <th>전화번호</th>
+    </tr>
+    </thead>
+    <tbody id="employeeTableBody">
+    <!-- JS로 채워짐 -->
+    </tbody>
+</table>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch("/api/employees/list")
+            .then(response => {
+                if (!response.ok) throw new Error("직원 데이터를 불러오는 데 실패했습니다.");
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("employeeTableBody");
+                tbody.innerHTML = ""; // 초기화
+
+                data.forEach(emp => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                            <td>${emp.username}</td>
+                            <td>${emp.department}</td>
+                            <td>${emp.position}</td>
+
+                            <td>${emp.phone}</td>
+                        `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error("에러 발생:", error);
+                document.getElementById("employeeTableBody").innerHTML =
+                    `<tr><td colspan="5">직원 데이터를 불러오는 데 실패했습니다.</td></tr>`;
+            });
+    });
+</script>
+</body>
+</html>

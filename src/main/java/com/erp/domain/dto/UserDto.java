@@ -27,4 +27,13 @@ public class UserDto {
                 .position(position)
                 .build();
     }
+
+    public UserDto(User user) {
+        this.username = user.getUsername();
+        this.password = user.getPassword();
+        this.phone = user.getPhone();
+        this.role = user.getRole();
+        this.department = user.getDepartment();
+        this.position = user.getPosition();
+    }
 }
