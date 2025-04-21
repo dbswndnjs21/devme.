@@ -30,6 +30,7 @@ public class UserService {
                 .role(userDTO.getRole())
                 .department(userDTO.getDepartment())
                 .position(userDTO.getPosition())
+                .email(userDTO.getEmail())
                 .build();
 
         // UserDTO에서 받은 역할을 Role 엔티티로 변환

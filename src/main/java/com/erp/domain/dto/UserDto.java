@@ -16,6 +16,7 @@ public class UserDto {
     private Role role;
     private String department;
     private String position;
+    private String email;
 
     public User toEntity(String encodedPassword) {
         return User.builder()
@@ -25,6 +26,7 @@ public class UserDto {
                 .role(role)
                 .department(department)
                 .position(position)
+                .email(email)
                 .build();
     }
 
@@ -35,5 +37,6 @@ public class UserDto {
         this.role = user.getRole();
         this.department = user.getDepartment();
         this.position = user.getPosition();
+        this.email = user.getEmail();
     }
 }

@@ -1,0 +1,32 @@
+package com.erp.domain.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@NoArgsConstructor
+public class StudyMember {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @ManyToOne
+    private User user;
+
+    @ManyToOne
+    private Study study;
+
+    @Enumerated(EnumType.STRING)
+    private Role role; // 스터디장 / 멤버
+
+    private LocalDateTime joinedAt;
+
+    public enum Role {
+        LEADER, MEMBER
+    }
+}
