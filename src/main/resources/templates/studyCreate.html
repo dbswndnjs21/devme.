@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스터디 생성</title>
+  <link rel="stylesheet" href="/css/studyCreate.css">
+</head>
+<body>
+<h1>스터디 생성</h1>
+
+<form id="studyForm">
+  <label for="name">스터디 이름:</label><br>
+  <input type="text" id="name" name="name" required><br><br>
+
+  <label for="description">설명:</label><br>
+  <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+  <label for="maxMembers">최대 인원 수:</label><br>
+  <input type="number" id="maxMembers" name="maxMembers" min="2" required><br><br>
+
+  <button type="submit">생성하기</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+  const form = document.getElementById('studyForm');
+  const resultDiv = document.getElementById('result');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const data = {
+      name: document.getElementById('name').value,
+      description: document.getElementById('description').value,
+      maxMembers: document.getElementById('maxMembers').value
+    };
+
+    fetch('/api/studyCreate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+            .then(res => {
+              if (!res.ok) throw new Error('스터디 생성 실패');
+              return res.text();
+            })
+            .then(msg => {
+              resultDiv.innerText = msg;
+              form.reset();
+              alert(msg)
+              window.location.href = "/";
+            })
+            .catch(err => {
+              resultDiv.innerText = err.message;
+            });
+  });
+</script>
+</body>
+</html>

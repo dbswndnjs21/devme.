@@ -1,5 +1,6 @@
 package com.erp.domain.entity;
 
+import com.erp.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,4 @@ public class StudyMember {
 
     private LocalDateTime joinedAt;
 
-    public enum Role {
-        LEADER, MEMBER
-    }
 }

@@ -1,6 +1,8 @@
 package com.erp.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,8 +12,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@Builder
 public class Study {
 
     @Id
@@ -22,7 +26,10 @@ public class Study {
 
     private String description;
 
-    @ManyToOne
+    @Column(nullable = false)
+    private int maxMembers; // 🔥 여기가 추가된 부분!
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
 
