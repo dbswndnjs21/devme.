@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스터디 리스트</title>
+    <link rel="stylesheet" href="/css/studyList.css">
+    <script>
+        // 페이지 로드 시 실행되는 함수
+        window.onload = function() {
+            // 서버에서 스터디 목록을 가져오기 위한 fetch 요청
+            fetch('/api/studyList')
+                .then(response => response.json())  // 응답을 JSON으로 변환
+                .then(data => {
+                    const studies = data;
+                    const tableBody = document.getElementById('studyTableBody');
+
+                    // 데이터를 테이블에 삽입
+                    studies.forEach(study => {
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `
+                            <td>${study.title}</td>
+                            <td>${study.description}</td>
+                            <td>${study.maxMembers}</td>
+                            <td>${study.createdBy.username}</td>
+                            <td>${study.createdAt}</td>
+                        `;
+
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                });
+        }
+    </script>
+</head>
+<body>
+<h1>스터디 목록</h1>
+<table border="1">
+    <thead>
+    <tr>
+        <th>제목</th>
+        <th>설명</th>
+        <th>최대 인원</th>
+        <th>작성자</th>
+        <th>생성일</th>
+    </tr>
+    </thead>
+    <tbody id="studyTableBody">
+    <!-- 데이터가 삽입될 곳 -->
+    </tbody>
+</table>
+</body>
+</html>

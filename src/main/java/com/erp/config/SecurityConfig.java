@@ -1,8 +1,9 @@
 package com.erp.config;
 
+import com.erp.scurity.CustomAccessDeniedHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -12,6 +13,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -25,7 +31,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers(request -> true))
                 .authorizeHttpRequests(authz -> authz
-                        .anyRequest().permitAll()) // 모든 요청에 인증이 필요하지 않음
+                        .requestMatchers("/loginForm", "/doLogin","/home","/", "/join", "/css/**").permitAll()
+                        .requestMatchers("/employees/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/loginForm")
                         .loginProcessingUrl("/doLogin")
@@ -38,7 +46,10 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .permitAll()
-                );
+                )
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(accessDeniedHandler
+                ));
         return http.build();
     }
 }

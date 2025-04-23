@@ -29,7 +29,7 @@ public class Study {
     @Column(nullable = false)
     private int maxMembers; // 🔥 여기가 추가된 부분!
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
 

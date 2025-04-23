@@ -1,6 +1,6 @@
 package com.erp.domain.enums;
 
 public enum Role {
-    LEADER,  // 관리자
-    MEMBER   // 일반 사용자
+    ROLE_ADMIN,  // 관리자
+    ROLE_MEMBER   // 일반 사용자
 }
