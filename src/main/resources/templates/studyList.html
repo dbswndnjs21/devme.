@@ -20,7 +20,7 @@
                         const row = document.createElement('tr');
 
                         row.innerHTML = `
-                            <td>${study.title}</td>
+                            <td><a href="/study/detail/${study.id}">${study.title}</a></td>
                             <td>${study.description}</td>
                             <td>${study.maxMembers}</td>
                             <td>${study.createdBy.username}</td>

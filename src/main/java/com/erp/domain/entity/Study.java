@@ -27,7 +27,7 @@ public class Study {
     private String description;
 
     @Column(nullable = false)
-    private int maxMembers; // 🔥 여기가 추가된 부분!
+    private int maxMembers;
 
     @ManyToOne
     @JoinColumn(name = "created_by")
@@ -35,4 +35,7 @@ public class Study {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @OneToOne(mappedBy = "study", cascade = CascadeType.ALL)
+    private StudyDetail detail;
 }

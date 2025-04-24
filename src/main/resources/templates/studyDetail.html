@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스터디 상세</title>
+<!--    <link rel="stylesheet" href="/css/studyDetail.css">-->
+    <script>
+        window.onload = function() {
+            const id = window.location.pathname.split('/').pop();  // URL에서 studyId 추출
+
+            fetch(`/api/studyDetail/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('스터디 상세 정보를 가져오는 데 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data)
+                    const study = data.study;
+                    const studyDetail = data.studyDetail;
+
+                    document.getElementById('studyTitle').innerText = study.title;
+                    document.getElementById('studyDescription').innerText = study.description;
+                    document.getElementById('studyMaxMembers').innerText = study.maxMembers;
+                    document.getElementById('studyCreatedBy').innerText = study.createdBy.username;
+                    document.getElementById('studyCreatedAt').innerText = study.createdAt;
+
+                    document.getElementById('studyGoal').innerText = studyDetail.goal;
+                    document.getElementById('studyHowToProceed').innerText = studyDetail.howToProceed;
+                    document.getElementById('studyTools').innerText = studyDetail.tools;
+                    document.getElementById('studyRules').innerText = studyDetail.rules;
+                    document.getElementById('studySchedule').innerText = studyDetail.schedule;
+                })
+                .catch(error => {
+                    console.error("Error fetching study details:", error);
+                    alert("스터디 정보를 불러오는 데 문제가 발생했습니다.");
+                });
+        };
+    </script>
+</head>
+<body>
+<h1>스터디 상세 정보</h1>
+
+<div>
+    <h2>제목: <span id="studyTitle">제목을 불러오는 중...</span></h2>
+    <p>설명: <span id="studyDescription">설명을 불러오는 중...</span></p>
+    <p>최대 인원 수: <span id="studyMaxMembers">최대 인원 수를 불러오는 중...</span></p>
+    <p>작성자: <span id="studyCreatedBy">작성자를 불러오는 중...</span></p>
+    <p>생성일: <span id="studyCreatedAt">생성일을 불러오는 중...</span></p>
+</div>
+
+<h3>스터디 세부 정보</h3>
+<div>
+    <p><strong>목표:</strong> <span id="studyGoal">목표를 불러오는 중...</span></p>
+    <p><strong>진행 방법:</strong> <span id="studyHowToProceed">진행 방법을 불러오는 중...</span></p>
+    <p><strong>사용 도구:</strong> <span id="studyTools">사용 도구를 불러오는 중...</span></p>
+    <p><strong>규칙:</strong> <span id="studyRules">규칙을 불러오는 중...</span></p>
+    <p><strong>일정:</strong> <span id="studySchedule">일정을 불러오는 중...</span></p>
+</div>
+
+<a href="/studyList">뒤로 가기</a>
+</body>
+</html>

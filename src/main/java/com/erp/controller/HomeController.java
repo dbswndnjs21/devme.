@@ -2,6 +2,7 @@ package com.erp.controller;
 
 import com.erp.domain.dto.HomeUserInfo;
 import com.erp.service.CustomUserDetails;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,7 +15,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class HomeController {
 
     @GetMapping("/")
-    public String home(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public String home(@AuthenticationPrincipal CustomUserDetails customUserDetails, HttpSession session) {
+        log.info("홈 접속 - 세션 ID: {}", session.getId());
+
+        Object context = session.getAttribute("SPRING_SECURITY_CONTEXT");
+
+        log.info("SPRING_SECURITY_CONTEXT: {}", context);
         if (customUserDetails != null) {
             log.info("세션이름 : {}", customUserDetails.getUsername());
         } else {

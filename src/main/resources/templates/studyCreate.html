@@ -10,13 +10,28 @@
 
 <form id="studyForm">
   <label for="name">스터디 이름:</label><br>
-  <input type="text" id="name" name="name" required><br><br>
+  <input type="text" id="name" name="name" required><br>
 
   <label for="description">설명:</label><br>
-  <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+  <textarea id="description" name="description" rows="4" cols="50" required></textarea><br>
 
   <label for="maxMembers">최대 인원 수:</label><br>
-  <input type="number" id="maxMembers" name="maxMembers" min="2" required><br><br>
+  <input type="number" id="maxMembers" name="maxMembers" min="2" required><br>
+
+  <label for="goal">스터디 목표:</label><br>
+  <textarea id="goal" name="goal" rows="4" cols="50" required></textarea><br>
+
+  <label for="howToProceed">진행 방식:</label><br>
+  <textarea id="howToProceed" name="howToProceed" rows="4" cols="50" required></textarea><br>
+
+  <label for="tools">사용 도구:</label><br>
+  <textarea id="tools" name="tools" rows="4" cols="50" required></textarea><br>
+
+  <label for="rules">규칙:</label><br>
+  <textarea id="rules" name="rules" rows="4" cols="50" required></textarea><br>
+
+  <label for="schedule">일정:</label><br>
+  <textarea id="schedule" name="schedule" rows="4" cols="50" required></textarea><br>
 
   <button type="submit">생성하기</button>
 </form>
@@ -33,7 +48,12 @@
     const data = {
       name: document.getElementById('name').value,
       description: document.getElementById('description').value,
-      maxMembers: document.getElementById('maxMembers').value
+      maxMembers: document.getElementById('maxMembers').value,
+      goal: document.getElementById('goal').value,
+      howToProceed: document.getElementById('howToProceed').value,
+      tools: document.getElementById('tools').value,
+      rules: document.getElementById('rules').value,
+      schedule: document.getElementById('schedule').value
     };
 
     fetch('/api/studyCreate', {
