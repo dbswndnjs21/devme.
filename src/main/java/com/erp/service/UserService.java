@@ -44,4 +44,9 @@ public class UserService {
                 .map(UserDto::new)  // User -> UserDto 변환
                 .collect(Collectors.toList());
     }
+
+    public UserDto findByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        return new UserDto(user);
+    }
 }

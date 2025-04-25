@@ -4,10 +4,13 @@ import com.erp.domain.entity.User;
 import com.erp.domain.enums.Role;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class UserDto {
 
     private String username;
@@ -17,16 +20,18 @@ public class UserDto {
     private String department;
     private String position;
     private String email;
+    private LocalDateTime createdAt;
 
-    public User toEntity(String encodedPassword) {
+    public User toEntity() {
         return User.builder()
                 .username(username)
-                .password(encodedPassword) // 암호화된 비밀번호를 넣어줘야 함
+                .password(password)
                 .phone(phone)
                 .role(role)
                 .department(department)
                 .position(position)
                 .email(email)
+                .createdAt(createdAt)
                 .build();
     }
 
@@ -38,5 +43,6 @@ public class UserDto {
         this.department = user.getDepartment();
         this.position = user.getPosition();
         this.email = user.getEmail();
+        this.createdAt = user.getCreatedAt();
     }
 }

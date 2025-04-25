@@ -31,7 +31,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers(request -> true))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/loginForm", "/doLogin","/home","/", "/join", "/css/**").permitAll()
+                        .requestMatchers("/loginForm", "/doLogin","/home","/", "/join", "/css/**", "/api/join").permitAll()
                         .requestMatchers("/employees/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form

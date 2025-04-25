@@ -2,8 +2,7 @@ package com.erp.controller;
 
 import com.erp.domain.dto.UserDto;
 import com.erp.service.UserService;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JoinController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/join")
     public String joinForm() {
@@ -28,6 +27,7 @@ public class JoinController {
     @PostMapping("/api/join")
     @ResponseBody
     public ResponseEntity<Map<String,Object>> joinUser(@RequestBody UserDto userDTO) {
+        System.out.println("여기오는지 화긴");
         Map<String, Object> response = new HashMap<>();
         try {
             userService.join(userDTO);  // 회원가입 처리

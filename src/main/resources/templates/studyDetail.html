@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>스터디 상세</title>
-<!--    <link rel="stylesheet" href="/css/studyDetail.css">-->
+    <link rel="stylesheet" href="/css/studyDetail.css">
     <script>
         window.onload = function() {
             const id = window.location.pathname.split('/').pop();  // URL에서 studyId 추출
@@ -38,6 +38,9 @@
                     alert("스터디 정보를 불러오는 데 문제가 발생했습니다.");
                 });
         };
+
+
+
     </script>
 </head>
 <body>
@@ -60,6 +63,34 @@
     <p><strong>일정:</strong> <span id="studySchedule">일정을 불러오는 중...</span></p>
 </div>
 
+<button id="joinRequestBtn">스터디 신청</button>
+
 <a href="/studyList">뒤로 가기</a>
 </body>
+<script>
+    document.getElementById("joinRequestBtn").addEventListener("click", function() {
+        const studyId = window.location.pathname.split('/').pop();
+
+        fetch(`/api/study/joinRequest/${studyId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message); // 서버에서 반환한 메시지를 받아서 에러 처리
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                alert("신청 중 오류 발생: " + error.message);
+            });
+    });
+</script>
 </html>

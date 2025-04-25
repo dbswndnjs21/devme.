@@ -1,5 +1,6 @@
 package com.erp.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -38,4 +41,9 @@ public class Study {
 
     @OneToOne(mappedBy = "study", cascade = CascadeType.ALL)
     private StudyDetail detail;
+
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<StudyJoinRequest> joinRequests = new ArrayList<>();
+
 }
