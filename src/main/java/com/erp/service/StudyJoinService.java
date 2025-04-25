@@ -62,6 +62,7 @@ public class StudyJoinService {
                         .status(request.getStatus())
                         .studyId(request.getStudy().getId())
                         .userId(request.getUser().getId())
+                        .userName(request.getUser().getUsername())
                         .studyTitle(request.getStudy().getTitle())
                         .build())
                 .collect(Collectors.toList());

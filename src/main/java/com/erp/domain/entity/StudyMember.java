@@ -26,8 +26,7 @@ public class StudyMember {
     @ManyToOne
     private Study study;
 
-    @Enumerated(EnumType.STRING)
-    private Role role; // 스터디장 / 멤버
+    private String role; // 스터디장 / 멤버
 
     private LocalDateTime joinedAt;
 

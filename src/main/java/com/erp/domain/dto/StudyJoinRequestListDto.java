@@ -16,6 +16,7 @@ public class StudyJoinRequestListDto {
 
     private Long studyId;
     private Long userId;
+    private String userName;
 
     private String studyTitle;
 }

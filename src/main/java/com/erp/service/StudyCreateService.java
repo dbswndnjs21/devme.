@@ -48,7 +48,7 @@ public class StudyCreateService {
         StudyMember studyMember = StudyMember.builder()
                 .study(study)
                 .user(user)
-                .role(user.getRole())
+                .role("LEADER")
                 .joinedAt(LocalDateTime.now())
                 .build();
         studyMemberRepository.save(studyMember);
