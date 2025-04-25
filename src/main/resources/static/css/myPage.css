@@ -1,0 +1,144 @@
+/* 전역 설정 */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+/* 컨테이너 설정 */
+#container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* 사이드바 메뉴 */
+#sidebar {
+    width: 250px;
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+#sidebar h2 {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+#sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#sidebar ul li {
+    margin: 15px 0;
+}
+
+#sidebar ul li a {
+    color: white;
+    font-size: 18px;
+    display: block;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+#sidebar ul li a:hover {
+    background-color: #34495e;
+}
+
+/* 콘텐츠 영역 */
+#content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: white;
+}
+
+#studyList, #studyManage {
+    margin-top: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+table th, table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+table td {
+    background-color: #fafafa;
+}
+
+/* 버튼 스타일 */
+button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button.approveBtn {
+    background-color: #28a745;
+    color: white;
+}
+
+button.approveBtn:hover {
+    background-color: #218838;
+}
+
+button.rejectBtn {
+    background-color: #dc3545;
+    color: white;
+}
+
+button.rejectBtn:hover {
+    background-color: #c82333;
+}
+
+/* 테이블 내 행 마우스 오버 */
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    #sidebar {
+        width: 200px;
+    }
+
+    #content {
+        padding: 15px;
+    }
+
+    table th, table td {
+        padding: 8px;
+    }
+
+    button {
+        font-size: 14px;
+    }
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지</title>
+    <link rel="stylesheet" href="/css/myPage.css">
+</head>
+<body>
+<div id="container">
+    <!-- 왼쪽 메뉴 -->
+    <nav id="sidebar">
+        <h2>내 계정</h2>
+        <ul>
+            <li><a href="/myPage/studyList">내 스터디 목록</a></li>
+            <li><a href="/myPage/manageStudies">스터디 관리</a></li>
+            <!-- 다른 메뉴 항목들도 추가 가능 -->
+        </ul>
+    </nav>
+
+    <!-- 오른쪽 컨텐츠 -->
+    <div id="content">
+        <h1>마이페이지</h1>
+
+        <!-- 내 스터디 목록 -->
+        <div id="studyList">
+            <h2>내가 신청한 스터디 목록</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>스터디 제목</th>
+                    <th>상태</th>
+                </tr>
+                </thead>
+                <tbody id="studyListBody">
+                <!-- 동적으로 스터디 목록이 여기에 들어갈 것 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 스터디 관리 (스터디 생성자가 보는 화면) -->
+        <div id="studyManage">
+            <h2>스터디 관리</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>스터디 제목</th>
+                    <th>신청자</th>
+                    <th>상태</th>
+                    <th>신청 시간</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody id="studyManageBody">
+                <!-- 동적으로 스터디 관리 정보가 여기에 들어갈 것 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 내 스터디 목록 가져오기
+    // fetch('/api/myStudyList')
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         const studyListBody = document.getElementById('studyListBody');
+    //         data.forEach(study => {
+    //             const row = document.createElement('tr');
+    //             row.innerHTML = `
+    //                     <td>${study.title}</td>
+    //                     <td>${study.status}</td>
+    //                 `;
+    //             studyListBody.appendChild(row);
+    //         });
+    //     })
+    //     .catch(error => console.error('Error fetching study list:', error));
+
+    // 스터디 관리(신청자 목록) 가져오기
+    fetch('/api/myManagedStudies')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            const studyManageBody = document.getElementById('studyManageBody');
+            data.forEach(study => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                            <td>${study.studyTitle}</td>
+                            <td>${study.userId}</td>
+                            <td>${study.status}</td>
+                            <td>${study.createdAt}</td>
+                            <td>
+                                <button class="approveBtn" data-request-id="${study.id}">승인</button>
+                                <button class="rejectBtn" data-request-id="${study.id}">거부</button>
+                            </td>
+                        `;
+                    studyManageBody.appendChild(row);
+                });
+        })
+        .catch(error => console.error('Error fetching managed studies:', error));2
+
+    // 신청자 승인 및 거부 버튼 처리
+    document.getElementById('studyManage').addEventListener('click', function(event) {
+        if (event.target.classList.contains('approveBtn')) {
+            const requestId = event.target.getAttribute('data-request-id');
+            // 승인 요청 API 호출
+            fetch(`/api/approveRequest/${requestId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert('신청 승인 완료'))
+                .catch(error => alert('승인 실패: ' + error.message));
+        }
+
+        if (event.target.classList.contains('rejectBtn')) {
+            const requestId = event.target.getAttribute('data-request-id');
+            // 거부 요청 API 호출
+            fetch(`/api/rejectRequest/${requestId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert('신청 거부 완료'))
+                .catch(error => alert('거부 실패: ' + error.message));
+        }
+    });
+</script>
+</body>
+</html>
