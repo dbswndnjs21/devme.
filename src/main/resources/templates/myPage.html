@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지</title>
     <link rel="stylesheet" href="/css/myPage.css">
+    <style>
+        #studyList, #studyManage {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 <div id="container">
@@ -12,9 +17,8 @@
     <nav id="sidebar">
         <h2>내 계정</h2>
         <ul>
-            <li><a href="/myPage/studyList">내 스터디 목록</a></li>
-            <li><a href="/myPage/manageStudies">스터디 관리</a></li>
-            <!-- 다른 메뉴 항목들도 추가 가능 -->
+            <li><a href="#" id="studyListMenu">내 스터디 목록</a></li>
+            <li><a href="#" id="manageStudiesMenu">스터디 관리</a></li>
         </ul>
     </nav>
 
@@ -33,7 +37,6 @@
                 </tr>
                 </thead>
                 <tbody id="studyListBody">
-                <!-- 동적으로 스터디 목록이 여기에 들어갈 것 -->
                 </tbody>
             </table>
         </div>
@@ -52,7 +55,6 @@
                 </tr>
                 </thead>
                 <tbody id="studyManageBody">
-                <!-- 동적으로 스터디 관리 정보가 여기에 들어갈 것 -->
                 </tbody>
             </table>
         </div>
@@ -60,31 +62,49 @@
 </div>
 
 <script>
-    // 내 스터디 목록 가져오기
-    // fetch('/api/myStudyList')
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         const studyListBody = document.getElementById('studyListBody');
-    //         data.forEach(study => {
-    //             const row = document.createElement('tr');
-    //             row.innerHTML = `
-    //                     <td>${study.title}</td>
-    //                     <td>${study.status}</td>
-    //                 `;
-    //             studyListBody.appendChild(row);
-    //         });
-    //     })
-    //     .catch(error => console.error('Error fetching study list:', error));
+    // "내 스터디 목록" 메뉴 클릭 시
+    document.getElementById('studyListMenu').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('studyList').style.display = 'block';
+        document.getElementById('studyManage').style.display = 'none';
 
-    // 스터디 관리(신청자 목록) 가져오기
-    fetch('/api/myManagedStudies')
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            const studyManageBody = document.getElementById('studyManageBody');
-            data.forEach(study => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
+        // 항상 새로 가져오기
+        const studyListBody = document.getElementById('studyListBody');
+        studyListBody.innerHTML = ''; // 기존 내용 제거
+
+            fetch('/api/myStudyList')
+                .then(response => response.json())
+                .then(data => {
+                    const studyListBody = document.getElementById('studyListBody');
+                    data.forEach(study => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${study.title}</td>
+                            <td>${study.status}</td>
+                        `;
+                        studyListBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching study list:', error));
+    });
+
+    // "스터디 관리" 메뉴 클릭 시
+    document.getElementById('manageStudiesMenu').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('studyList').style.display = 'none';
+        document.getElementById('studyManage').style.display = 'block';
+
+        // 항상 새로 가져오기
+        const studyManageBody = document.getElementById('studyManageBody');
+        studyManageBody.innerHTML = ''; // 기존 내용 제거
+
+            fetch('/api/myManagedStudies')
+                .then(response => response.json())
+                .then(data => {
+                    const studyManageBody = document.getElementById('studyManageBody');
+                    data.forEach(study => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
                             <td>${study.studyTitle}</td>
                             <td>${study.userId}</td>
                             <td>${study.status}</td>
@@ -94,28 +114,27 @@
                                 <button class="rejectBtn" data-request-id="${study.id}">거부</button>
                             </td>
                         `;
-                    studyManageBody.appendChild(row);
-                });
-        })
-        .catch(error => console.error('Error fetching managed studies:', error));2
+                        studyManageBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching managed studies:', error));
+    });
 
-    // 신청자 승인 및 거부 버튼 처리
+    // 승인 및 거부 처리
     document.getElementById('studyManage').addEventListener('click', function(event) {
         if (event.target.classList.contains('approveBtn')) {
             const requestId = event.target.getAttribute('data-request-id');
-            // 승인 요청 API 호출
             fetch(`/api/approveRequest/${requestId}`, { method: 'POST' })
                 .then(response => response.json())
-                .then(data => alert('신청 승인 완료'))
+                .then(() => alert('신청 승인 완료'))
                 .catch(error => alert('승인 실패: ' + error.message));
         }
 
         if (event.target.classList.contains('rejectBtn')) {
             const requestId = event.target.getAttribute('data-request-id');
-            // 거부 요청 API 호출
             fetch(`/api/rejectRequest/${requestId}`, { method: 'POST' })
                 .then(response => response.json())
-                .then(data => alert('신청 거부 완료'))
+                .then(() => alert('신청 거부 완료'))
                 .catch(error => alert('거부 실패: ' + error.message));
         }
     });
