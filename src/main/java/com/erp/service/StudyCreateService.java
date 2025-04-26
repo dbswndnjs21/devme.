@@ -5,6 +5,7 @@ import com.erp.domain.entity.Study;
 import com.erp.domain.entity.StudyDetail;
 import com.erp.domain.entity.StudyMember;
 import com.erp.domain.entity.User;
+import com.erp.domain.enums.StudyStatus;
 import com.erp.domain.repository.StudyDetailRepository;
 import com.erp.domain.repository.StudyMemberRepository;
 import com.erp.domain.repository.StudyRepository;
@@ -30,6 +31,7 @@ public class StudyCreateService {
                 .description(dto.getDescription())
                 .maxMembers(dto.getMaxMembers())
                 .createdBy(user)
+                .status(StudyStatus.INPROGRESS)
                 .build();
 
         studyRepository.save(study);

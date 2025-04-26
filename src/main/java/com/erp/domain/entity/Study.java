@@ -1,5 +1,6 @@
 package com.erp.domain.entity;
 
+import com.erp.domain.enums.StudyStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,9 @@ public class Study {
 
     @Column(nullable = false)
     private int maxMembers;
+
+    @Enumerated(EnumType.STRING)
+    private StudyStatus status;
 
     @ManyToOne
     @JoinColumn(name = "created_by")

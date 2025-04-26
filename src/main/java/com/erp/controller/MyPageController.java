@@ -1,5 +1,6 @@
 package com.erp.controller;
 
+import com.erp.domain.dto.StudyDto;
 import com.erp.domain.dto.StudyJoinRequestListDto;
 import com.erp.service.*;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.List;
 public class MyPageController {
 
     private final StudyJoinService studyJoinService;
+    private final StudyMemberService studyMemberService;
 
     @GetMapping("/myPage")
     public String myPage() {
@@ -28,4 +30,9 @@ public class MyPageController {
         return studyJoinService.getStudyJoinRequestList(principal.getName());
     }
 
+    @GetMapping("/api/myStudyList")
+    @ResponseBody
+    public List<StudyDto> StudyList(Principal principal) {
+        return studyMemberService.getMyStudyList(principal.getName());
+    }
 }
