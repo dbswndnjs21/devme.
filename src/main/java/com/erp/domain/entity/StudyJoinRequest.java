@@ -36,4 +36,11 @@ public class StudyJoinRequest {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+
+    // StudyJoinRequest.java 수정
+    // 상태 업데이트 메소드 추가
+    public void updateStatus(RequestStatus status) {
+        this.status = status;
+    }
 }

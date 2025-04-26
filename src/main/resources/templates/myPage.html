@@ -18,7 +18,7 @@
         <h2>내 계정</h2>
         <ul>
             <li><a href="#" id="studyListMenu">내 스터디 목록</a></li>
-            <li><a href="#" id="manageStudiesMenu">스터디 관리</a></li>
+            <li><a href="#" id="manageStudiesMenu">내 스터디 신청자 관리</a></li>
         </ul>
     </nav>
 
@@ -36,14 +36,13 @@
                     <th>상태</th>
                 </tr>
                 </thead>
-                <tbody id="studyListBody">
-                </tbody>
+                <tbody id="studyListBody"></tbody>
             </table>
         </div>
 
         <!-- 스터디 관리 (스터디 생성자가 보는 화면) 내가 생성한 스터디에 신청을 넣는 사람 목록 (StudyJoinRequest) -->
         <div id="studyManage">
-            <h2>스터디 관리</h2>
+            <h2>내 스터디 신청자 관리</h2>
             <table>
                 <thead>
                 <tr>
@@ -54,70 +53,69 @@
                     <th>관리</th>
                 </tr>
                 </thead>
-                <tbody id="studyManageBody">
-                </tbody>
+                <tbody id="studyManageBody"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    // "내 스터디 목록" 메뉴 클릭 시
+    // "내 스터디 목록" 새로고침
     document.getElementById('studyListMenu').addEventListener('click', function(e) {
         e.preventDefault();
         document.getElementById('studyList').style.display = 'block';
         document.getElementById('studyManage').style.display = 'none';
 
-        // 항상 새로 가져오기
         const studyListBody = document.getElementById('studyListBody');
-        studyListBody.innerHTML = ''; // 기존 내용 제거
+        studyListBody.innerHTML = '';
 
-            fetch('/api/myStudyList')
-                .then(response => response.json())
-                .then(data => {
-                    const studyListBody = document.getElementById('studyListBody');
-                    data.forEach(study => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${study.title}</td>
-                            <td>${study.status}</td>
-                        `;
-                        studyListBody.appendChild(row);
-                    });
-                })
-                .catch(error => console.error('Error fetching study list:', error));
+        fetch('/api/myStudyList')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(study => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${study.title}</td>
+                        <td>${study.status}</td>
+                    `;
+                    studyListBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching study list:', error));
     });
+
+    // "스터디 관리" 새로고침 함수
+    function refreshStudyManage() {
+        const studyManageBody = document.getElementById('studyManageBody');
+        studyManageBody.innerHTML = '';
+
+        fetch('/api/myManagedStudies')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(study => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${study.studyTitle}</td>
+                        <td>${study.userName}</td>
+                        <td>${study.status}</td>
+                        <td>${study.createdAt}</td>
+                        <td>
+                            <button class="approveBtn" data-request-id="${study.requestId}">승인</button>
+                            <button class="rejectBtn" data-request-id="${study.requestId}">거부</button>
+                        </td>
+                    `;
+                    studyManageBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching managed studies:', error));
+    }
 
     // "스터디 관리" 메뉴 클릭 시
     document.getElementById('manageStudiesMenu').addEventListener('click', function(e) {
         e.preventDefault();
         document.getElementById('studyList').style.display = 'none';
         document.getElementById('studyManage').style.display = 'block';
-
-        // 항상 새로 가져오기
-        const studyManageBody = document.getElementById('studyManageBody');
-        studyManageBody.innerHTML = ''; // 기존 내용 제거
-
-            fetch('/api/myManagedStudies')
-                .then(response => response.json())
-                .then(data => {
-                    const studyManageBody = document.getElementById('studyManageBody');
-                    data.forEach(study => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${study.studyTitle}</td>
-                            <td>${study.userName}</td>
-                            <td>${study.status}</td>
-                            <td>${study.createdAt}</td>
-                            <td>
-                                <button class="approveBtn" data-request-id="${study.id}">승인</button>
-                                <button class="rejectBtn" data-request-id="${study.id}">거부</button>
-                            </td>
-                        `;
-                        studyManageBody.appendChild(row);
-                    });
-                })
-                .catch(error => console.error('Error fetching managed studies:', error));
+        refreshStudyManage();
     });
 
     // 승인 및 거부 처리
@@ -125,16 +123,28 @@
         if (event.target.classList.contains('approveBtn')) {
             const requestId = event.target.getAttribute('data-request-id');
             fetch(`/api/approveRequest/${requestId}`, { method: 'POST' })
-                .then(response => response.json())
-                .then(() => alert('신청 승인 완료'))
+                .then(response => {
+                    if (response.ok) {
+                        alert('신청 승인 완료');
+                        refreshStudyManage();
+                    } else {
+                        throw new Error('승인 실패');
+                    }
+                })
                 .catch(error => alert('승인 실패: ' + error.message));
         }
 
         if (event.target.classList.contains('rejectBtn')) {
             const requestId = event.target.getAttribute('data-request-id');
             fetch(`/api/rejectRequest/${requestId}`, { method: 'POST' })
-                .then(response => response.json())
-                .then(() => alert('신청 거부 완료'))
+                .then(response => {
+                    if (response.ok) {
+                        alert('신청 거부 완료');
+                        refreshStudyManage();
+                    } else {
+                        throw new Error('거부 실패');
+                    }
+                })
                 .catch(error => alert('거부 실패: ' + error.message));
         }
     });

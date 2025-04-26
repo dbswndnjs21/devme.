@@ -20,12 +20,12 @@ public class StudyMemberService {
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
 
-    // 로그인한 사용자와 같은 studymember 테이블에서 전체 데이터
+    // 로그인한 사용자와 같은 studyMember 테이블에서 전체 데이터
     public List<StudyDto> getMyStudyList(String user) {
 
         User byUsername = userRepository.findByUsername(user);
         List<StudyMember> studyMemberList = studyMemberRepository.findByUserId(byUsername.getId());
-        // 내가 포함된 stduyMember
+        // 내가 포함된 studyMember
 
         List<Long> studyIds = studyMemberList.stream()
                 .map(studyMember -> studyMember.getStudy().getId())
