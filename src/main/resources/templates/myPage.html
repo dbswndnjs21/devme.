@@ -34,6 +34,7 @@
                 <tr>
                     <th>스터디 제목</th>
                     <th>상태</th>
+                    <th>직급</th>
                 </tr>
                 </thead>
                 <tbody id="studyListBody"></tbody>
@@ -77,6 +78,7 @@
                     row.innerHTML = `
                         <td>${study.title}</td>
                         <td>${study.status}</td>
+                        <td>${study.role}</td>
                     `;
                     studyListBody.appendChild(row);
                 });

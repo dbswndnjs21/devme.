@@ -82,7 +82,7 @@ public class StudyJoinService {
         StudyMember member = StudyMember.builder()
                 .study(request.getStudy())
                 .user(request.getUser())
-                .role("ROLE_MEMBER") // 기본 멤버 역할
+                .role("MEMBER") // 스티디원으로 추가
                 .joinedAt(LocalDateTime.now())
                 .build();
 

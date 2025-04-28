@@ -13,7 +13,8 @@ public class StudyDto {
     private String description;
     private int maxMembers;
     private Long createdById;
-    private String createdByUsername; // 필요하면 추가
+    private String createdByUsername;
     private LocalDateTime createdAt;
     private String status;
+    private String role;
 }
