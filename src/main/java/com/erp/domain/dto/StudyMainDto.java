@@ -16,5 +16,5 @@ public class StudyMainDto {
     private Study study;
     private StudyDetail studyDetail;
     private List<StudyMember> studyMember;
-
+    private boolean isLeader;
 }

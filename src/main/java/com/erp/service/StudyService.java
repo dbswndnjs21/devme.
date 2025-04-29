@@ -5,6 +5,7 @@ import com.erp.domain.dto.StudyMainDto;
 import com.erp.domain.entity.Study;
 import com.erp.domain.entity.StudyDetail;
 import com.erp.domain.entity.StudyMember;
+import com.erp.domain.entity.User;
 import com.erp.domain.repository.StudyDetailRepository;
 import com.erp.domain.repository.StudyMemberRepository;
 import com.erp.domain.repository.StudyRepository;
@@ -35,15 +36,18 @@ public class StudyService {
         return new StudyDetailsDto(study, studyDetail);
     }
 
-    public StudyMainDto getStudyMainInfo(Long studyId) {
+    public StudyMainDto getStudyMainInfo(Long studyId, Long id) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new EntityNotFoundException("스터디를 찾을 수 없습니다. ID: " + studyId));
+
+        // 로그인한 사용자와 만든 사람 (리더) 와 같은지 여부
+        boolean isLeader = study.getCreatedBy().getId().equals(id);
 
         StudyDetail studyDetail = studyDetailRepository.findByStudy(study)
                 .orElseThrow(() -> new EntityNotFoundException("스터디 상세 정보를 찾을 수 없습니다. 스터디 ID: " + studyId));
 
         List<StudyMember> studyMemberList = studyMemberRepository.findByStudy(study);
 
-        return new StudyMainDto(study, studyDetail, studyMemberList);
+        return new StudyMainDto(study, studyDetail, studyMemberList, isLeader);
     }
 }
