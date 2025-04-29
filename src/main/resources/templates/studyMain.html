@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>스터디 메인</title>
+    <link rel="stylesheet" href="/css/studyMain.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        #container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #2c7be5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1a68d1;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        a {
+            color: #2c7be5;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+<div id="container">
+    <h1 id="studyTitle">스터디 제목</h1>
+
+    <div class="section">
+        <h2>스터디 정보</h2>
+        <p>상태: <span id="studyStatus">로딩 중...</span></p>
+        <button onclick="checkAttendance()">출석 체크</button>
+    </div>
+
+    <div class="section">
+        <h2>공지사항</h2>
+        추후 공지 추가 예정
+    </div>
+
+    <div class="section">
+        <h2>스터디 멤버</h2>
+        <ul id="memberList"></ul>
+    </div>
+
+    <div class="section">
+        <button onclick="window.location.href='/myPage'">마이페이지로 돌아가기</button>
+    </div>
+</div>
+
+<script>
+    const studyId = window.location.pathname.split("/").pop();
+
+    // 스터디 메인 정보 불러오기
+    fetch(`/api/study/main/${studyId}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            document.getElementById('studyTitle').innerText = data.study.title;
+            document.getElementById('studyStatus').innerText = data.study.status;
+
+            const memberList = document.getElementById('memberList');
+            data.studyMember.forEach(member => {
+                const li = document.createElement('li');
+                li.innerText = `${member.user.id} (${member.role})`;
+                memberList.appendChild(li);
+            });
+        })
+        .catch(err => {
+            alert("스터디 정보를 불러오지 못했습니다.");
+            console.error(err);
+        });
+
+    function checkAttendance() {
+        fetch(`/api/study/${studyId}/attendance`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    alert("출석 체크 완료!");
+                } else {
+                    alert("출석 체크 실패!");
+                }
+            });
+    }
+</script>
+</body>
+</html>

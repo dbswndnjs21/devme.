@@ -52,4 +52,9 @@ public class MyPageController {
     public void rejectRequest(@PathVariable Long requestId) {
         studyJoinService.rejectRequest(requestId);
     }
+
+    @GetMapping("/study/main/{id}")
+    public String studyMainForm(@PathVariable Long id) {
+        return "studyMain";
+    }
 }
