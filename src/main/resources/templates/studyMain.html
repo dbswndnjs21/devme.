@@ -43,6 +43,10 @@
 
 <script>
     const studyId = window.location.pathname.split("/").pop();
+    let userId = null; // 로그인한 사용자 ID 저장용
+    let timer = null;
+    let countdown = 30 * 60; // 30분
+    const status = document.getElementById('attendanceStatus');
 
     // 스터디 메인 정보 불러오기
     fetch(`/api/study/main/${studyId}`)
@@ -63,53 +67,76 @@
             if (data.leader) {
                 document.getElementById('adminMenu').style.display = 'block';
             }
+
+            // 로그인한 사용자 ID 저장
+            userId = data.loginUserId;
+
+            // 사용자별 출석 키 구성
+            const ATTENDANCE_KEY = `attendance:${studyId}:${userId}`;
+
+            // 출석 시작 시간 복구
+            const savedStartTime = localStorage.getItem(ATTENDANCE_KEY);
+            if (savedStartTime) {
+                const elapsed = Math.floor((Date.now() - parseInt(savedStartTime, 10)) / 1000);
+                if (elapsed < countdown) {
+                    startTimer(countdown - elapsed, ATTENDANCE_KEY);
+                } else {
+                    // 30분 넘었으면 출석 완료 처리
+                    finalizeAttendance(ATTENDANCE_KEY);
+                }
+            }
+
+            document.getElementById('startAttendanceBtn').addEventListener('click', function () {
+                if (timer) {
+                    alert("이미 출석 중입니다.");
+                    return;
+                }
+
+                localStorage.setItem(ATTENDANCE_KEY, Date.now());
+                startTimer(countdown, ATTENDANCE_KEY);
+            });
         })
         .catch(err => {
             alert("스터디 정보를 불러오지 못했습니다.");
             console.error(err);
         });
 
-    let timer = null;
-    let countdown = 30 * 60; // 30분 (초 단위)
-
-    document.getElementById('startAttendanceBtn').addEventListener('click', function () {
-        if (timer) {
-            alert("이미 출석 중입니다.");
-            return;
-        }
-
-        const status = document.getElementById('attendanceStatus');
-        status.innerText = `출석 중... 남은 시간: ${formatTime(countdown)}`;
-
+    function startTimer(timeLeft, key) {
+        status.innerText = `출석 중... 남은 시간: ${formatTime(timeLeft)}`;
         timer = setInterval(() => {
-            countdown--;
-            status.innerText = `출석 중... 남은 시간: ${formatTime(countdown)}`;
-
-            if (countdown <= 0) {
+            timeLeft--;
+            status.innerText = `출석 중... 남은 시간: ${formatTime(timeLeft)}`;
+            if (timeLeft <= 0) {
                 clearInterval(timer);
                 timer = null;
-                status.innerText = "출석 완료 처리 중...";
-
-                fetch(`/api/study/${studyId}/attendance`, { method: 'POST' })
-                    .then(res => {
-                        if (res.ok) {
-                            status.innerText = "출석이 완료되었습니다!";
-                        } else {
-                            status.innerText = "출석 처리 실패";
-                        }
-                    })
-                    .catch(() => {
-                        status.innerText = "출석 처리 실패 (네트워크 오류)";
-                    });
+                finalizeAttendance(key);
             }
         }, 1000);
-    });
+    }
+
+    function finalizeAttendance(key) {
+        status.innerText = "출석 완료 처리 중...";
+        localStorage.removeItem(key);
+
+        fetch(`/api/study/${studyId}/attendance`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    status.innerText = "출석이 완료되었습니다!";
+                } else {
+                    status.innerText = "출석 처리 실패";
+                }
+            })
+            .catch(() => {
+                status.innerText = "출석 처리 실패 (네트워크 오류)";
+            });
+    }
 
     function formatTime(seconds) {
         const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
         const secs = String(seconds % 60).padStart(2, '0');
         return `${mins}:${secs}`;
     }
+
 </script>
 </body>
 </html>

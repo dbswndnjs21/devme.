@@ -1,11 +1,11 @@
 package com.erp.domain.entity;
 
-import com.erp.domain.entity.StudyMember;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,22 +13,24 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Attendance {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private StudyMember studyMember;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    private Study study;
 
     private LocalDate date;
 
-    @Enumerated(EnumType.STRING)
-    private Status status; // 출석/지각/결석
+    private LocalDateTime attendedAt;
 
-    private String memo;
-
-    public enum Status {
-        PRESENT, LATE, ABSENT
-    }
 }

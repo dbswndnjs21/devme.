@@ -5,7 +5,6 @@ import com.erp.domain.dto.StudyMainDto;
 import com.erp.domain.entity.Study;
 import com.erp.domain.entity.StudyDetail;
 import com.erp.domain.entity.StudyMember;
-import com.erp.domain.entity.User;
 import com.erp.domain.repository.StudyDetailRepository;
 import com.erp.domain.repository.StudyMemberRepository;
 import com.erp.domain.repository.StudyRepository;
@@ -48,6 +47,6 @@ public class StudyService {
 
         List<StudyMember> studyMemberList = studyMemberRepository.findByStudy(study);
 
-        return new StudyMainDto(study, studyDetail, studyMemberList, isLeader);
+        return new StudyMainDto(study, studyDetail, studyMemberList, isLeader, id);
     }
 }

@@ -2,6 +2,7 @@ package com.erp.domain.entity;
 
 import com.erp.domain.enums.StudyStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,5 +50,10 @@ public class Study {
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<StudyJoinRequest> joinRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "study")
+    @JsonManagedReference
+    private List<Attendance> attendances = new ArrayList<>();
+
 
 }

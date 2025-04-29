@@ -17,4 +17,5 @@ public class StudyMainDto {
     private StudyDetail studyDetail;
     private List<StudyMember> studyMember;
     private boolean isLeader;
+    private Long loginUserId;
 }
