@@ -28,7 +28,7 @@ public class AttendanceService {
 
         LocalDate today = LocalDate.now();
 
-        boolean alreadyExists = attendanceRepository.existsByUserAndStudyAndDate(user, study, today);
+        boolean alreadyExists = attendanceRepository.existsByUserIdAndStudyIdAndDate(user.getId(), study.getId(), today);
         if (alreadyExists) {
             throw new IllegalStateException("이미 출석 완료된 상태입니다.");
         }
@@ -41,4 +41,12 @@ public class AttendanceService {
                 .build();
         attendanceRepository.save(attendance);
     }
+
+    public boolean hasAttendedToday(Long userId, Long studyId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+        Study study = studyRepository.findById(studyId).orElseThrow(() -> new IllegalArgumentException("스터디 없음"));
+        LocalDate today = LocalDate.now();
+        return attendanceRepository.existsByUserAndStudyAndDate(user, study, today);
+    }
+
 }

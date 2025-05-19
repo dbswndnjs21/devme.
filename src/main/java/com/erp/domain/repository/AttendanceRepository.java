@@ -9,4 +9,5 @@ import java.time.LocalDate;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     boolean existsByUserAndStudyAndDate(User user, Study study, LocalDate date);
+    boolean existsByUserIdAndStudyIdAndDate(Long userId, Long studyId, LocalDate date);
 }

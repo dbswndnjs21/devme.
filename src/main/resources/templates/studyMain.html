@@ -92,14 +92,29 @@
                     return;
                 }
 
-                localStorage.setItem(ATTENDANCE_KEY, Date.now());
-                startTimer(countdown, ATTENDANCE_KEY);
+                fetch(`/api/study/${studyId}/attendance/check`)
+                    .then(res => {
+                        if (res.status === 200) {
+                            return res.json();
+                        } else {
+                            throw new Error("출석 확인 실패")
+                        }
+                    })
+                    .then(data => {
+                        if (data.alreadyAttended) {
+                            alert("이미 출석 완료된 상태입니다.");
+                        } else {
+                            localStorage.setItem(ATTENDANCE_KEY, Date.now());
+                            startTimer(countdown, ATTENDANCE_KEY);
+                        }
+                    })
+                    .catch(err => {
+                        alert("출석 확인 중 오류가 발생했습니다 .");
+                        console.error(err);
+                    });
             });
         })
-        .catch(err => {
-            alert("스터디 정보를 불러오지 못했습니다.");
-            console.error(err);
-        });
+
 
     function startTimer(timeLeft, key) {
         status.innerText = `출석 중... 남은 시간: ${formatTime(timeLeft)}`;
@@ -120,8 +135,12 @@
 
         fetch(`/api/study/${studyId}/attendance`, { method: 'POST' })
             .then(res => {
-                if (res.ok) {
+                if (res.status === 200) {
                     status.innerText = "출석이 완료되었습니다!";
+                } else if (res.status === 409) {
+                    res.text().then(msg => {
+                        status.innerText = msg;
+                    });
                 } else {
                     status.innerText = "출석 처리 실패";
                 }
