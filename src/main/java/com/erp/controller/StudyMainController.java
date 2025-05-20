@@ -29,7 +29,6 @@ public class StudyMainController {
     @GetMapping("/api/study/{studyId}/attendance/check")
     public ResponseEntity<?> checkAttendance(@PathVariable Long studyId, @AuthenticationPrincipal CustomUserDetails user) {
         boolean attended = attendanceService.hasAttendedToday(user.getId(), studyId);
-        System.out.println("test : " + attended);
         return ResponseEntity.ok(Map.of("alreadyAttended", attended));
     }
 }
