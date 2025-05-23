@@ -1,5 +1,6 @@
 package com.erp.service;
 
+import com.erp.domain.dto.NotificationMessage;
 import com.erp.domain.dto.StudyJoinRequestListDto;
 import com.erp.domain.dto.UserDto;
 import com.erp.domain.entity.Study;
@@ -12,6 +13,7 @@ import com.erp.domain.repository.StudyMemberRepository;
 import com.erp.domain.repository.StudyRepository;
 import com.erp.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class StudyJoinService {
     private final StudyJoinRequestRepository studyJoinRequestRepository;
     private final UserRepository userRepository;
     private final StudyMemberRepository studyMemberRepository;
+    private final RabbitTemplate rabbitTemplate;
 
 
     @Transactional
@@ -48,6 +51,26 @@ public class StudyJoinService {
                 .build();
 
         studyJoinRequestRepository.save(request);
+
+        // 🔔 알림 메시지 전송 (스터디장에게)
+        String content = String.format("%s님이 '%s' 스터디에 참여 신청했습니다.",
+                user.getUsername(), study.getTitle());
+
+        NotificationMessage notification = new NotificationMessage(
+                study.getCreatedBy().getId(), content
+        );
+
+//        rabbitTemplate.convertAndSend("notification.exchange", "notification.key", notification);
+
+        try {
+            rabbitTemplate.convertAndSend("notification.exchange", "notification.key", notification);
+            System.out.println("RabbitMQ 메시지 발행 성공!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("RabbitMQ 메시지 발행 실패!");
+        }
+
+
         return "스터디 신청이 완료되었습니다.";  // 성공 메시지 반환
     }
 
