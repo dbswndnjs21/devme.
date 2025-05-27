@@ -30,6 +30,7 @@ public class StudyJoinService {
     private final UserRepository userRepository;
     private final StudyMemberRepository studyMemberRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final NotificationService notificationService;
 
 
     @Transactional
@@ -52,23 +53,30 @@ public class StudyJoinService {
 
         studyJoinRequestRepository.save(request);
 
-        // 🔔 알림 메시지 전송 (스터디장에게)
-        String content = String.format("%s님이 '%s' 스터디에 참여 신청했습니다.",
-                user.getUsername(), study.getTitle());
+//        // 🔔 알림 메시지 전송 (스터디장에게)
+//        String content = String.format("%s님이 '%s' 스터디에 참여 신청했습니다.",
+//                user.getUsername(), study.getTitle());
+//
+//        NotificationMessage notification = new NotificationMessage(
+//                study.getCreatedBy().getId(), content
+//        );
+//
+////        rabbitTemplate.convertAndSend("notification.exchange", "notification.key", notification);
+//
+//        try {
+//            rabbitTemplate.convertAndSend("notification.exchange", "notification.key", notification);
+//            System.out.println("RabbitMQ 메시지 발행 성공!");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.out.println("RabbitMQ 메시지 발행 실패!");
+//        }
 
-        NotificationMessage notification = new NotificationMessage(
-                study.getCreatedBy().getId(), content
+        // 🔔 알림 발송
+        notificationService.sendNotification(
+                study.getCreatedBy().getId(),
+                String.format("%s님이 '%s' 스터디에 참여 신청했습니다.",
+                        user.getUsername(), study.getTitle())
         );
-
-//        rabbitTemplate.convertAndSend("notification.exchange", "notification.key", notification);
-
-        try {
-            rabbitTemplate.convertAndSend("notification.exchange", "notification.key", notification);
-            System.out.println("RabbitMQ 메시지 발행 성공!");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("RabbitMQ 메시지 발행 실패!");
-        }
 
 
         return "스터디 신청이 완료되었습니다.";  // 성공 메시지 반환
