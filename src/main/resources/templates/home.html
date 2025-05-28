@@ -57,16 +57,17 @@
     </div>
 </div>
 <script>
-    function connectWebSocket() {
+    function connectWebSocket(username) {
         const socket = new SockJS('/ws');
         const stompClient = Stomp.over(socket);
-        console.log("여기까진 오니 ")
+        console.log("여기까진 오니 " + username)
 
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/user/queue/notifications', function (message) {
-                console.log("구독 콜백 호출됨");
-                console.log("메시지 수신:", message.body);
+            stompClient.subscribe(`/topic/notifications.${username}`, function (message) {
+                    console.log("구독 콜백 호출됨 : ", message);
+                    console.log("메시지 수신:", message.body);
+                // const notification = JSON.parse(message.body);
                 const notification = message.body;
                 showNotification(notification);
             });
@@ -75,7 +76,8 @@
         function showNotification(notification) {
             const notificationsList = document.getElementById('notificationsList');
             const li = document.createElement('li');
-            li.textContent = `🔔  ${notification.message} (${new Date(notification.timestamp).toLocaleTimeString()})`;
+            // li.textContent = `🔔  ${notification.message} (${new Date(notification.timestamp).toLocaleTimeString()})`;
+            li.textContent = `🔔  ${notification} (${new Date().toLocaleTimeString()})`;
             notificationsList.prepend(li);
         }
     }
@@ -99,7 +101,7 @@
                     </div>
                 `;
 
-                connectWebSocket(); // 로그인 후 웹소켓 연결
+                connectWebSocket(data.username); // 로그인 후 웹소켓 연결
 
                 const loginButton = document.getElementById("loginButton");
                 const loginForm = document.getElementById("loginForm");
