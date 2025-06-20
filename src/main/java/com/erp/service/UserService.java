@@ -8,10 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.erp.domain.enums.UserStatus.ACTIVE;
 
 @Service
 @AllArgsConstructor
@@ -21,6 +19,17 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public void join(UserDto userDTO) {
+
+        // 1. 아이디 중복 검사 (null 체크 방식)
+        if (userRepository.findByUsername(userDTO.getUsername()) != null) {
+            throw new IllegalStateException("이미 사용 중인 아이디입니다.");
+        }
+
+        // 2. 비밀번호 공백 검사 (DTO 검증도 있지만, 이중 방어 가능)
+        if (userDTO.getPassword() == null || userDTO.getPassword().trim().isEmpty()) {
+            throw new IllegalStateException("비밀번호는 필수 입력값입니다.");
+        }
+
         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
 
         User user = User.builder()

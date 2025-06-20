@@ -2,6 +2,8 @@ package com.erp.domain.dto;
 
 import com.erp.domain.entity.User;
 import com.erp.domain.enums.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -13,13 +15,21 @@ import java.time.LocalDateTime;
 @ToString
 public class UserDto {
 
+    @NotBlank(message = "아이디는 필수입니다")
     private String username;
+    
+    @NotBlank(message = "비밀번호는 필수입니다")
     private String password;
+
     private String phone;
     private Role role;
     private String department;
     private String position;
+
+    @NotBlank(message = "이메일은 필수입니다")
+    @Email(message = "올바른 이메일 형식이 아닙니다")
     private String email;
+
     private LocalDateTime createdAt;
 
     public User toEntity() {
