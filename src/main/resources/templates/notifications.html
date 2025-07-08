@@ -6,91 +6,129 @@
 </head>
 <style>
     body {
-        font-family: sans-serif;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         padding: 2rem;
+        background-color: #f0f4f8;
     }
 
     h1 {
         margin-bottom: 1rem;
+        color: #1e293b;
     }
 
-    ul {body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 2rem;
-        background-color: #f0f4f8; /* 살짝 밝은 파스텔 블루톤 */
+    ul {
+        list-style: none;
+        padding: 0;
     }
 
-        h1 {
-            margin-bottom: 1rem;
-            color: #1e293b; /* 진한 네이비 톤 */
-        }
+    li {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background-color: #ffffff;
+        box-shadow: 0 2px 6px rgba(100, 116, 139, 0.1);
+        transition: background-color 0.3s ease;
+    }
 
-        ul {
-            list-style: none;
-            padding: 0;
-        }
+    li:hover {
+        background-color: #e2e8f0;
+    }
 
-        li {
-            list-style-type: none;   /* 혹시 남아있는 점 제거 */
-            border: 1px solid #cbd5e1; /* 밝은 회색-블루 톤 */
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            background-color: #ffffff; /* 순백색 */
-            box-shadow: 0 2px 6px rgba(100, 116, 139, 0.1); /* 부드러운 그림자 */
-            transition: background-color 0.3s ease;
-        }
-
-        li:hover {
-            background-color: #e2e8f0; /* 연한 회색-블루 톤으로 호버 효과 */
-        }
-
-        .timestamp {
-            color: #64748b; /* 중간 톤 블루-그레이 */
-            font-size: 0.9rem;
-            margin-top: 0.3rem;
-            font-style: italic;
-        }
+    .timestamp {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+        font-style: italic;
     }
 </style>
-<script>
-    window.onload = function () {
-        fetch('/api/notifications')
-            .then(res => {
-                if (!res.ok) throw new Error("알림함을 불러오는데 실패했습니다");
-                return res.json();
-            })
-            .then(response => {
-                if (!response.success) throw new Error(response.message);
-
-                const notifications = response.data;
-                const list = document.getElementById("notificationList");
-
-                if (notifications.length === 0) {
-                    list.innerHTML = "<li>알림이 없습니다.</li>";
-                    return;
-                }
-
-                notifications.forEach(notification => {
-                    const item = document.createElement("li");
-
-                    item.innerHTML = `
-                        <div>${notification.message}</div>
-                        <div class="timestamp">${new Date(notification.createdAt).toLocaleString()}</div>
-                    `;
-                    list.appendChild(item);
-                });
-            })
-            .catch(err => {
-                alert(err.message);
-            });
-    };
-</script>
 <body>
 <h1>📬 알림함</h1>
-<ul id="notificationList">
+<button id="markAllBtn">모두 읽음</button>
+<ul id="notificationList"></ul>
 
-</ul>
+<script>
+    function renderNotifications(list, notifications) {
+        list.innerHTML = "";
+        if (notifications.length === 0) {
+            list.innerHTML = "<li>알림이 없습니다.</li>";
+            return;
+        }
+
+        notifications.forEach(n => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div>${n.message}</div>
+                <div class="timestamp">${new Date(n.createdAt).toLocaleString()}</div>
+                <button class="readBtn" data-id="${n.id}">읽음</button>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    async function fetchNotifications() {
+        const res = await fetch('/api/notifications');
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message);
+        return json.data;
+    }
+
+    async function markRead(id) {
+        const res = await fetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
+        if (!res.ok) {
+            const json = await res.json().catch(() => ({}));
+            throw new Error(json.message || '읽음 처리에 실패했습니다');
+        }
+    }
+
+    async function markAllRead() {
+        const res = await fetch('/api/notifications/read-all', { method: 'PATCH' });
+        if (!res.ok) {
+            const json = await res.json().catch(() => ({}));
+            throw new Error(json.message || '모두 읽음 처리에 실패했습니다');
+        }
+    }
+
+    function showError(err) {
+        alert(err.message || '알 수 없는 오류가 발생했습니다');
+        console.error(err);
+    }
+
+    window.onload = async () => {
+        const list = document.getElementById('notificationList');
+        const markAllBtn = document.getElementById('markAllBtn');
+
+        let notifications = [];
+        try {
+            notifications = await fetchNotifications();
+            renderNotifications(list, notifications);
+        } catch (err) {
+            showError(err);
+        }
+
+        list.addEventListener('click', async e => {
+            if (!e.target.classList.contains('readBtn')) return;
+            const id = e.target.dataset.id;
+            try {
+                await markRead(id);
+                notifications = notifications.filter(n => n.id !== Number(id));
+                renderNotifications(list, notifications);
+            } catch (err) {
+                showError(err);
+            }
+        });
+
+        markAllBtn.onclick = async () => {
+            if (!confirm('모든 알림을 읽음 처리하시겠습니까?')) return;
+            try {
+                await markAllRead();
+                notifications = [];
+                renderNotifications(list, notifications);
+            } catch (err) {
+                showError(err);
+            }
+        };
+    };
+</script>
 </body>
-
 </html>

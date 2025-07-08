@@ -19,6 +19,11 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, message, data);
     }
 
+    // 데이터 없이 성공만 표시
+    public static <T> ApiResponse<T> success() {
+        return new ApiResponse<>(true, "요청 성공", null);
+    }
+
     // 실패 응답 생성
     public static <T> ApiResponse<T> fail(String message) {
         return new ApiResponse<>(false, message, null);
