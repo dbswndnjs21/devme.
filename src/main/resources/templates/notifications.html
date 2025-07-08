@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>알림함</title>
+</head>
+<style>
+    body {
+        font-family: sans-serif;
+        padding: 2rem;
+    }
+
+    h1 {
+        margin-bottom: 1rem;
+    }
+
+    ul {body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 2rem;
+        background-color: #f0f4f8; /* 살짝 밝은 파스텔 블루톤 */
+    }
+
+        h1 {
+            margin-bottom: 1rem;
+            color: #1e293b; /* 진한 네이비 톤 */
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            list-style-type: none;   /* 혹시 남아있는 점 제거 */
+            border: 1px solid #cbd5e1; /* 밝은 회색-블루 톤 */
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background-color: #ffffff; /* 순백색 */
+            box-shadow: 0 2px 6px rgba(100, 116, 139, 0.1); /* 부드러운 그림자 */
+            transition: background-color 0.3s ease;
+        }
+
+        li:hover {
+            background-color: #e2e8f0; /* 연한 회색-블루 톤으로 호버 효과 */
+        }
+
+        .timestamp {
+            color: #64748b; /* 중간 톤 블루-그레이 */
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+    }
+</style>
+<script>
+    window.onload = function () {
+        fetch('/api/notifications')
+            .then(res => {
+                if (!res.ok) throw new Error("알림함을 불러오는데 실패했습니다");
+                return res.json();
+            })
+            .then(response => {
+                if (!response.success) throw new Error(response.message);
+
+                const notifications = response.data;
+                const list = document.getElementById("notificationList");
+
+                if (notifications.length === 0) {
+                    list.innerHTML = "<li>알림이 없습니다.</li>";
+                    return;
+                }
+
+                notifications.forEach(notification => {
+                    const item = document.createElement("li");
+
+                    item.innerHTML = `
+                        <div>${notification.message}</div>
+                        <div class="timestamp">${new Date(notification.createdAt).toLocaleString()}</div>
+                    `;
+                    list.appendChild(item);
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    };
+</script>
+<body>
+<h1>📬 알림함</h1>
+<ul id="notificationList">
+
+</ul>
+</body>
+
+</html>

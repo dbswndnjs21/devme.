@@ -25,10 +25,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ApiResponse.fail(errorMessage));
     }
 
-//
-//    // 모든 예외
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<ApiResponse<Void>> handleOtherExceptions(Exception ex) {
-//        return ResponseEntity.internalServerError().body(ApiResponse.fail("서버 오류: " + ex.getMessage()));
-//    }
+
+    // 모든 예외
+    @ResponseBody
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleOtherExceptions(Exception ex) {
+        return ResponseEntity.internalServerError().body(ApiResponse.fail("서버 오류: " + ex.getMessage()));
+    }
 }
