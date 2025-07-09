@@ -1,11 +1,11 @@
 package com.erp.service;
 
-import com.erp.domain.entity.Attendance;
-import com.erp.domain.entity.Study;
-import com.erp.domain.entity.User;
-import com.erp.domain.repository.AttendanceRepository;
-import com.erp.domain.repository.StudyRepository;
-import com.erp.domain.repository.UserRepository;
+import com.erp.entity.Attendance;
+import com.erp.entity.Study;
+import com.erp.entity.User;
+import com.erp.repository.AttendanceRepository;
+import com.erp.repository.StudyRepository;
+import com.erp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

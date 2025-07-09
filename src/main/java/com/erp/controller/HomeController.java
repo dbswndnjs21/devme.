@@ -1,6 +1,6 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.HomeUserInfo;
+import com.erp.dto.HomeUserInfo;
 import com.erp.service.CustomUserDetails;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;

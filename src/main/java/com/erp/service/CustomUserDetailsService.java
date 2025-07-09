@@ -1,7 +1,7 @@
 package com.erp.service;
 
-import com.erp.domain.entity.User;
-import com.erp.domain.repository.UserRepository;
+import com.erp.entity.User;
+import com.erp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

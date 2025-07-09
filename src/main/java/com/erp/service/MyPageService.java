@@ -1,13 +1,10 @@
 package com.erp.service;
 
-import com.erp.domain.entity.Study;
-import com.erp.domain.repository.StudyJoinRequestRepository;
-import com.erp.domain.repository.StudyRepository;
-import com.erp.domain.repository.UserRepository;
+import com.erp.repository.StudyJoinRequestRepository;
+import com.erp.repository.StudyRepository;
+import com.erp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

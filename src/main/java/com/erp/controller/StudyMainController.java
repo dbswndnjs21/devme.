@@ -1,7 +1,7 @@
 package com.erp.controller;
 
 
-import com.erp.domain.dto.StudyMainDto;
+import com.erp.dto.StudyMainDto;
 import com.erp.service.AttendanceService;
 import com.erp.service.CustomUserDetails;
 import com.erp.service.StudyService;

@@ -1,6 +1,6 @@
 package com.erp.exception;
 
-import com.erp.domain.dto.ApiResponse;
+import com.erp.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;

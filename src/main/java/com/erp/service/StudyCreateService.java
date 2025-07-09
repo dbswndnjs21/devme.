@@ -1,15 +1,14 @@
 package com.erp.service;
 
-import com.erp.domain.dto.StudyCreateRequestDto;
-import com.erp.domain.entity.Study;
-import com.erp.domain.entity.StudyDetail;
-import com.erp.domain.entity.StudyMember;
-import com.erp.domain.entity.User;
-import com.erp.domain.enums.StudyStatus;
-import com.erp.domain.repository.StudyDetailRepository;
-import com.erp.domain.repository.StudyMemberRepository;
-import com.erp.domain.repository.StudyRepository;
-import com.erp.domain.repository.UserRepository;
+import com.erp.dto.StudyCreateRequestDto;
+import com.erp.entity.Study;
+import com.erp.entity.StudyDetail;
+import com.erp.entity.StudyMember;
+import com.erp.entity.User;
+import com.erp.enums.StudyStatus;
+import com.erp.repository.StudyDetailRepository;
+import com.erp.repository.StudyMemberRepository;
+import com.erp.repository.StudyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

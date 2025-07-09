@@ -1,6 +1,6 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.UserDto;
+import com.erp.dto.UserDto;
 import com.erp.service.StudyJoinService;
 import com.erp.service.UserService;
 import lombok.RequiredArgsConstructor;

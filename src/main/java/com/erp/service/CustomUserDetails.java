@@ -1,6 +1,6 @@
 package com.erp.service;
 
-import com.erp.domain.entity.User;
+import com.erp.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,13 +1,13 @@
 package com.erp.service;
 
-import com.erp.domain.dto.StudyDetailsDto;
-import com.erp.domain.dto.StudyMainDto;
-import com.erp.domain.entity.Study;
-import com.erp.domain.entity.StudyDetail;
-import com.erp.domain.entity.StudyMember;
-import com.erp.domain.repository.StudyDetailRepository;
-import com.erp.domain.repository.StudyMemberRepository;
-import com.erp.domain.repository.StudyRepository;
+import com.erp.dto.StudyDetailsDto;
+import com.erp.dto.StudyMainDto;
+import com.erp.entity.Study;
+import com.erp.entity.StudyDetail;
+import com.erp.entity.StudyMember;
+import com.erp.repository.StudyDetailRepository;
+import com.erp.repository.StudyMemberRepository;
+import com.erp.repository.StudyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

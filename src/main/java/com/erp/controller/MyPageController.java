@@ -1,7 +1,7 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.StudyDto;
-import com.erp.domain.dto.StudyJoinRequestListDto;
+import com.erp.dto.StudyDto;
+import com.erp.dto.StudyJoinRequestListDto;
 import com.erp.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

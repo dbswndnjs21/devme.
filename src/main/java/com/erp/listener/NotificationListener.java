@@ -1,10 +1,10 @@
 package com.erp.listener;
 
 import com.erp.config.RabbitMQConfig;
-import com.erp.domain.dto.NotificationMessage;
-import com.erp.domain.entity.Notification;
-import com.erp.domain.repository.NotificationRepository;
-import com.erp.domain.repository.UserRepository;
+import com.erp.dto.NotificationMessage;
+import com.erp.entity.Notification;
+import com.erp.repository.NotificationRepository;
+import com.erp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

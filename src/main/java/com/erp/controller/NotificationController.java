@@ -1,7 +1,7 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.ApiResponse;
-import com.erp.domain.dto.NotificationDto;
+import com.erp.dto.ApiResponse;
+import com.erp.dto.NotificationDto;
 import com.erp.service.CustomUserDetails;
 import com.erp.service.NotificationService;
 import lombok.RequiredArgsConstructor;

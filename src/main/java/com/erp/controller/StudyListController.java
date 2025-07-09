@@ -1,6 +1,6 @@
 package com.erp.controller;
 
-import com.erp.domain.entity.Study;
+import com.erp.entity.Study;
 import com.erp.service.StudyListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

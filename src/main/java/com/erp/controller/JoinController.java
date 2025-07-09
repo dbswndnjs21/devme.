@@ -1,7 +1,7 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.ApiResponse;
-import com.erp.domain.dto.UserDto;
+import com.erp.dto.ApiResponse;
+import com.erp.dto.UserDto;
 import com.erp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor

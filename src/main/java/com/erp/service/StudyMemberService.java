@@ -1,12 +1,12 @@
 package com.erp.service;
 
-import com.erp.domain.dto.StudyDto;
-import com.erp.domain.entity.Study;
-import com.erp.domain.entity.StudyMember;
-import com.erp.domain.entity.User;
-import com.erp.domain.repository.StudyMemberRepository;
-import com.erp.domain.repository.StudyRepository;
-import com.erp.domain.repository.UserRepository;
+import com.erp.dto.StudyDto;
+import com.erp.entity.Study;
+import com.erp.entity.StudyMember;
+import com.erp.entity.User;
+import com.erp.repository.StudyMemberRepository;
+import com.erp.repository.StudyRepository;
+import com.erp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

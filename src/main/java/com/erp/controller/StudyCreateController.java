@@ -1,6 +1,6 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.StudyCreateRequestDto;
+import com.erp.dto.StudyCreateRequestDto;
 import com.erp.service.CustomUserDetails;
 import com.erp.service.StudyCreateService;
 import lombok.RequiredArgsConstructor;

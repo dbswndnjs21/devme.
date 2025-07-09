@@ -1,6 +1,6 @@
 package com.erp.controller;
 
-import com.erp.domain.dto.StudyDetailsDto;
+import com.erp.dto.StudyDetailsDto;
 import com.erp.service.StudyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

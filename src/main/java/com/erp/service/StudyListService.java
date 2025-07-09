@@ -1,7 +1,7 @@
 package com.erp.service;
 
-import com.erp.domain.entity.Study;
-import com.erp.domain.repository.StudyRepository;
+import com.erp.entity.Study;
+import com.erp.repository.StudyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

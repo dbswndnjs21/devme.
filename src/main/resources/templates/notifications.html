@@ -110,8 +110,11 @@
             if (!e.target.classList.contains('readBtn')) return;
             const id = e.target.dataset.id;
             try {
+                // 읽기 버튼 누르면 isread true로 변경
                 await markRead(id);
+                // 즉각적인 UI 반응을 위해 읽음 처리한 알림만 제외하고 새 배열 생성
                 notifications = notifications.filter(n => n.id !== Number(id));
+                // 변경된 알림 목록을 다시 화면에 출력
                 renderNotifications(list, notifications);
             } catch (err) {
                 showError(err);

@@ -1,8 +1,8 @@
 package com.erp.service;
 
-import com.erp.domain.dto.UserDto;
-import com.erp.domain.entity.User;
-import com.erp.domain.repository.UserRepository;
+import com.erp.dto.UserDto;
+import com.erp.entity.User;
+import com.erp.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
