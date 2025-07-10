@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>마이페이지</title>
     <link rel="stylesheet" href="/css/myPage.css">
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
     <style>
-        #studyList, #studyManage {
+        #studyList, #studyManage, #calendarSection {
             display: none;
+        }
+
+        #calendar {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            height: auto;
         }
     </style>
 </head>
@@ -19,6 +31,7 @@
         <ul>
             <li><a href="#" id="studyListMenu">내 스터디 목록</a></li>
             <li><a href="#" id="manageStudiesMenu">내 스터디 신청자 관리</a></li>
+            <li><a href="#" id="calendarMenu">일정 관리</a></li>
         </ul>
     </nav>
 
@@ -26,7 +39,7 @@
     <div id="content">
         <h1>마이페이지</h1>
 
-        <!-- 내 스터디 목록 / 내가 포함 되어 있는 스터디 목록 (StudyMember) -->
+        <!-- 내 스터디 목록 -->
         <div id="studyList">
             <h2>내 스터디 목록</h2>
             <table>
@@ -41,7 +54,7 @@
             </table>
         </div>
 
-        <!-- 스터디 관리 (스터디 생성자가 보는 화면) 내가 생성한 스터디에 신청을 넣는 사람 목록 (StudyJoinRequest) -->
+        <!-- 스터디 신청자 관리 -->
         <div id="studyManage">
             <h2>내 스터디 신청자 관리</h2>
             <table>
@@ -57,15 +70,25 @@
                 <tbody id="studyManageBody"></tbody>
             </table>
         </div>
+
+        <!-- 일정 관리 -->
+        <div id="calendarSection">
+            <h2>출석 및 일정 관리</h2>
+            <div id="calendar"></div>
+        </div>
     </div>
 </div>
 
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
 <script>
-    // "내 스터디 목록" 새로고침
+    // 내 스터디 목록
     document.getElementById('studyListMenu').addEventListener('click', function(e) {
         e.preventDefault();
         document.getElementById('studyList').style.display = 'block';
         document.getElementById('studyManage').style.display = 'none';
+        document.getElementById('calendarSection').style.display = 'none';
 
         const studyListBody = document.getElementById('studyListBody');
         studyListBody.innerHTML = '';
@@ -90,7 +113,7 @@
             .catch(error => console.error('Error fetching study list:', error));
     });
 
-    // "스터디 관리" 새로고침 함수
+    // 스터디 신청자 관리
     function refreshStudyManage() {
         const studyManageBody = document.getElementById('studyManageBody');
         studyManageBody.innerHTML = '';
@@ -116,15 +139,14 @@
             .catch(error => console.error('Error fetching managed studies:', error));
     }
 
-    // "스터디 관리" 메뉴 클릭 시
     document.getElementById('manageStudiesMenu').addEventListener('click', function(e) {
         e.preventDefault();
         document.getElementById('studyList').style.display = 'none';
         document.getElementById('studyManage').style.display = 'block';
+        document.getElementById('calendarSection').style.display = 'none';
         refreshStudyManage();
     });
 
-    // 승인 및 거부 처리
     document.getElementById('studyManage').addEventListener('click', function(event) {
         if (event.target.classList.contains('approveBtn')) {
             const requestId = event.target.getAttribute('data-request-id');
@@ -154,6 +176,52 @@
                 .catch(error => alert('거부 실패: ' + error.message));
         }
     });
+
+    // 일정관리 (출석 캘린더)
+    let calendar;
+    document.getElementById('calendarMenu').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('studyList').style.display = 'none';
+        document.getElementById('studyManage').style.display = 'none';
+        document.getElementById('calendarSection').style.display = 'block';
+
+        if (!calendar) {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                height: 'auto',
+                contentHeight: 'auto',
+                expandRows: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,listWeek'
+                },
+                events: fetchAttendanceEvents
+            });
+            calendar.render();
+            setTimeout(() => calendar.updateSize(), 10);
+        }
+    });
+
+    function fetchAttendanceEvents(fetchInfo, successCallback, failureCallback) {
+        fetch('/api/myAttendance')
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    successCallback(result.data);
+                } else {
+                    console.error('출석 정보 로딩 실패:', result.message);
+                    failureCallback(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading attendance:', error);
+                failureCallback(error);
+            });
+    }
+
 </script>
 </body>
 </html>

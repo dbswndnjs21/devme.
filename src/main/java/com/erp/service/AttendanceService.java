@@ -1,5 +1,6 @@
 package com.erp.service;
 
+import com.erp.dto.AttendanceCalendarDto;
 import com.erp.entity.Attendance;
 import com.erp.entity.Study;
 import com.erp.entity.User;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -49,4 +51,10 @@ public class AttendanceService {
         return attendanceRepository.existsByUserAndStudyAndDate(user, study, today);
     }
 
+    public List<AttendanceCalendarDto> getMyAttendance(Long userId) {
+        List<Attendance> attendances = attendanceRepository.findByUserId(userId);
+        return attendances.stream()
+                .map(AttendanceCalendarDto::new)
+                .toList();
+    }
 }
