@@ -198,7 +198,14 @@
                     center: 'title',
                     right: 'dayGridMonth,listWeek'
                 },
-                events: fetchAttendanceEvents
+                events: fetchAttendanceEvents,
+
+                eventDidMount: function(info) {
+                    if (info.event.extendedProps.description) {
+                        // title 요소에 description을 툴팁으로 설정
+                        info.el.setAttribute("title", info.event.extendedProps.description);
+                    }
+                }
             });
             calendar.render();
             setTimeout(() => calendar.updateSize(), 10);
@@ -206,21 +213,40 @@
     });
 
     function fetchAttendanceEvents(fetchInfo, successCallback, failureCallback) {
-        fetch('/api/myAttendance')
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    successCallback(result.data);
-                } else {
-                    console.error('출석 정보 로딩 실패:', result.message);
-                    failureCallback(result.message);
+        Promise.all([
+            fetch('/api/myAttendance').then(res => res.json()),
+            fetch('/api/mySchedule').then(res => res.json())
+        ])
+            .then(([attendanceRes, scheduleRes]) => {
+                const events = [];
+
+                if (attendanceRes.success) {
+                    const attendanceEvents = attendanceRes.data.map(item => ({
+                        title: item.title,
+                        start: item.start,
+                        color: item.color
+                    }));
+                    events.push(...attendanceEvents);
                 }
+
+                if (scheduleRes.success) {
+                    const scheduleEvents = scheduleRes.data.map(item => ({
+                        title: item.title,
+                        start: item.date,
+                        description: item.description,
+                        color: item.color
+                    }));
+                    events.push(...scheduleEvents);
+                }
+
+                successCallback(events);
             })
             .catch(error => {
-                console.error('Error loading attendance:', error);
+                console.error('Error loading calendar data:', error);
                 failureCallback(error);
             });
     }
+
 
 </script>
 </body>

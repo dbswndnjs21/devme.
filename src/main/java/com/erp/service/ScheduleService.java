@@ -2,6 +2,7 @@ package com.erp.service;
 
 import com.erp.dto.ScheduleCreateRequest;
 import com.erp.dto.ScheduleDto;
+import com.erp.dto.ScheduleResponseDTO;
 import com.erp.entity.Schedule;
 import com.erp.entity.Study;
 import com.erp.entity.User;
@@ -53,4 +54,12 @@ public class ScheduleService {
 
         scheduleRepository.save(schedule);
     }
+
+    public List<ScheduleResponseDTO> getSchedulesByUser(Long userId) {
+        List<Schedule> scheduleList = scheduleRepository.findByCreatedById(userId);
+        return scheduleList.stream()
+                .map(ScheduleResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 }
