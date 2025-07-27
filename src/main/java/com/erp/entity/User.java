@@ -46,6 +46,22 @@ public class User {
     @CreatedDate
     private LocalDateTime createdAt;
 
+    /**
+     * 사용자 집 주소 (도로명 주소 or 지번 주소 전체)
+     * UI 표시용, 검색 참고용
+     */
+    private String address;
+
+    /**
+     * 사용자 집 위치 위도 (latitude)
+     */
+    private Double latitude;
+
+    /**
+     * 사용자 집 위치 경도 (longitude)
+     */
+    private Double longitude;
+
     @OneToMany(mappedBy = "user")
     @JsonManagedReference
     private List<Attendance> attendances = new ArrayList<>();

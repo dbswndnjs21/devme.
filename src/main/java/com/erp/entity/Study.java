@@ -55,5 +55,20 @@ public class Study {
     @JsonManagedReference
     private List<Attendance> attendances = new ArrayList<>();
 
+    /**
+     * 스터디 모임 장소 주소 (오프라인 모임일 경우)
+     * 온라인 모임일 땐 null 또는 빈 문자열 가능
+     */
+    private String locationAddress;
+
+    /**
+     * 스터디 모임 장소 위도 (latitude)
+     */
+    private Double locationLatitude;
+
+    /**
+     * 스터디 모임 장소 경도 (longitude)
+     */
+    private Double locationLongitude;
 
 }

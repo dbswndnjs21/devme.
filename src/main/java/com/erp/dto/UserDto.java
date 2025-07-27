@@ -31,6 +31,10 @@ public class UserDto {
     private String email;
 
     private LocalDateTime createdAt;
+    private String address;
+    private Double latitude;
+    private Double longitude;
+
 
     public User toEntity() {
         return User.builder()
@@ -42,6 +46,9 @@ public class UserDto {
                 .position(position)
                 .email(email)
                 .createdAt(createdAt)
+                .address(address)
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
     }
 
@@ -54,5 +61,8 @@ public class UserDto {
         this.position = user.getPosition();
         this.email = user.getEmail();
         this.createdAt = user.getCreatedAt();
+        this.address = user.getAddress();
+        this.latitude = user.getLatitude();
+        this.longitude = user.getLongitude();
     }
 }

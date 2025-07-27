@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <title>스터디 메인</title>
     <link rel="stylesheet" href="/css/studyMain.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css' rel='stylesheet' />
+    <style>
+        #scheduleModal {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        #calendarContainer {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
 <div id="container">
@@ -38,21 +56,39 @@
             <h2>스터디 멤버</h2>
             <ul id="memberList"></ul>
         </div>
+
+        <!-- 스터디 일정 섹션 -->
+        <div class="section">
+            <h2>스터디 일정</h2>
+            <button id="openScheduleModalBtn" style="display: none;">일정 추가</button>
+            <div id="calendarContainer"></div>
+        </div>
+
+        <!-- 일정 추가 모달 -->
+        <div id="scheduleModal">
+            <h3>일정 추가</h3>
+            <label>제목: <input type="text" id="scheduleTitle"></label><br>
+            <label>설명: <textarea id="scheduleDescription"></textarea></label><br>
+            <label>날짜: <input type="date" id="scheduleDate"></label><br>
+            <button id="submitScheduleBtn">등록</button>
+            <button onclick="document.getElementById('scheduleModal').style.display='none'">닫기</button>
+        </div>
     </div>
 </div>
 
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js'></script>
 <script>
     const studyId = window.location.pathname.split("/").pop();
-    let userId = null; // 로그인한 사용자 ID 저장용
+    let userId = null;
+    let isLeader = false;
+
     let timer = null;
-    let countdown = 30 * 60; // 30분
+    let countdown = 30 * 60;
     const status = document.getElementById('attendanceStatus');
 
-    // 스터디 메인 정보 불러오기
     fetch(`/api/study/main/${studyId}`)
         .then(response => response.json())
         .then(data => {
-            console.log(data)
             document.getElementById('studyTitle').innerText = data.study.title;
             document.getElementById('studyStatus').innerText = data.study.status;
 
@@ -63,25 +99,21 @@
                 memberList.appendChild(li);
             });
 
-            // 관리자 페이지 사용 여부 판단
             if (data.leader) {
                 document.getElementById('adminMenu').style.display = 'block';
+                document.getElementById('openScheduleModalBtn').style.display = 'inline-block';
+                isLeader = true;
             }
 
-            // 로그인한 사용자 ID 저장
             userId = data.loginUserId;
 
-            // 사용자별 출석 키 구성
             const ATTENDANCE_KEY = `attendance:${studyId}:${userId}`;
-
-            // 출석 시작 시간 복구
             const savedStartTime = localStorage.getItem(ATTENDANCE_KEY);
             if (savedStartTime) {
                 const elapsed = Math.floor((Date.now() - parseInt(savedStartTime, 10)) / 1000);
                 if (elapsed < countdown) {
                     startTimer(countdown - elapsed, ATTENDANCE_KEY);
                 } else {
-                    // 30분 넘었으면 출석 완료 처리
                     finalizeAttendance(ATTENDANCE_KEY);
                 }
             }
@@ -93,13 +125,7 @@
                 }
 
                 fetch(`/api/study/${studyId}/attendance/check`)
-                    .then(res => {
-                        if (res.status === 200) {
-                            return res.json();
-                        } else {
-                            throw new Error("출석 확인 실패")
-                        }
-                    })
+                    .then(res => res.status === 200 ? res.json() : Promise.reject("출석 확인 실패"))
                     .then(data => {
                         if (data.alreadyAttended) {
                             alert("이미 출석 완료된 상태입니다.");
@@ -109,12 +135,13 @@
                         }
                     })
                     .catch(err => {
-                        alert("출석 확인 중 오류가 발생했습니다 .");
+                        alert("출석 확인 중 오류가 발생했습니다.");
                         console.error(err);
                     });
             });
-        })
 
+            loadCalendar();
+        });
 
     function startTimer(timeLeft, key) {
         status.innerText = `출석 중... 남은 시간: ${formatTime(timeLeft)}`;
@@ -138,16 +165,12 @@
                 if (res.status === 200) {
                     status.innerText = "출석이 완료되었습니다!";
                 } else if (res.status === 409) {
-                    res.text().then(msg => {
-                        status.innerText = msg;
-                    });
+                    res.text().then(msg => status.innerText = msg);
                 } else {
                     status.innerText = "출석 처리 실패";
                 }
             })
-            .catch(() => {
-                status.innerText = "출석 처리 실패 (네트워크 오류)";
-            });
+            .catch(() => status.innerText = "출석 처리 실패 (네트워크 오류)");
     }
 
     function formatTime(seconds) {
@@ -156,6 +179,57 @@
         return `${mins}:${secs}`;
     }
 
+    // 일정 모달 열기
+    document.getElementById('openScheduleModalBtn').addEventListener('click', () => {
+        document.getElementById('scheduleModal').style.display = 'block';
+    });
+
+    // 일정 등록
+    document.getElementById('submitScheduleBtn').addEventListener('click', () => {
+        const title = document.getElementById('scheduleTitle').value;
+        const description = document.getElementById('scheduleDescription').value;
+        const date = document.getElementById('scheduleDate').value;
+
+        fetch(`/api/study/${studyId}/schedule`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, date })
+        }).then(res => {
+            if (res.ok) {
+                alert('일정 등록 완료');
+                document.getElementById('scheduleModal').style.display = 'none';
+                calendar.refetchEvents();
+            } else {
+                alert('일정 등록 실패');
+            }
+        });
+    });
+
+    // 캘린더 렌더링
+    let calendar;
+    function loadCalendar() {
+        const calendarEl = document.getElementById('calendarContainer');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listWeek'
+            },
+            events: function (fetchInfo, successCallback, failureCallback) {
+                fetch(`/api/study/${studyId}/schedules`)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            successCallback(result.data);
+                        } else {
+                            failureCallback(result.message);
+                        }
+                    });
+            }
+        });
+        calendar.render();
+    }
 </script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>회원가입</title>
     <link rel="stylesheet" th:href="@{/css/join.css}">
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
 <form id="joinForm">
@@ -34,9 +35,9 @@
 
     <input type="hidden" id="role" name="role" value="ROLE_MEMBER">
 
-    <div class="input-group">
+    <div class="input-group" style="display: none;">
         <label for="department">부서</label>
-        <select id="department" name="department" required>
+        <select id="department" name="department">
             <option value="인사">인사</option>
             <option value="IT">IT</option>
             <option value="영업">영업</option>
@@ -46,10 +47,22 @@
         </select>
     </div>
 
-    <div class="input-group">
+
+    <div class="input-group" style="display: none;">
         <label for="position">직급</label>
         <input type="text" id="position" name="position" required placeholder="직급을 입력해주세요" />
     </div>
+
+    <div class="input-group">
+        <label for="address">주소</label>
+        <input type="text" id="address" name="address" placeholder="주소를 입력해주세요" readonly required />
+        <button type="button" onclick="searchAddress()" style="margin-top: 6px;">주소 검색</button>
+    </div>
+
+
+    <input type="hidden" id="latitude" name="latitude">
+    <input type="hidden" id="longitude" name="longitude">
+
 
     <div class="input-group">
         <label for="password">비밀번호</label>
@@ -75,6 +88,35 @@
 </form>
 
 <script>
+
+    function searchAddress() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                const fullAddress = data.address;
+                document.getElementById('address').value = fullAddress;
+
+                // 카카오 Geocoding API 호출 (주소 → 좌표)
+                fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(fullAddress)}`, {
+                    method: 'GET',
+                    headers: {
+
+                        Authorization: 'KakaoAK 04b7de86c1a2a0a98ad0a0d8135e578b' // 여기에 실제 Kakao REST API 키 입력
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.documents.length > 0) {
+                            const location = data.documents[0];
+                            document.getElementById('latitude').value = location.y;  // 위도
+                            document.getElementById('longitude').value = location.x; // 경도
+                        } else {
+                            alert("좌표를 찾을 수 없습니다.");
+                        }
+                    })
+                    .catch(error => console.error('주소 → 좌표 변환 실패:', error));
+            }
+        }).open();
+    }
     document.getElementById("submitBtn").addEventListener("click", function(event) {
         event.preventDefault();
 
@@ -87,8 +129,12 @@
             department: document.getElementById("department").value,
             position: document.getElementById("position").value,
             password: document.getElementById("password").value,
-            passwordConfirm: document.getElementById("passwordConfirm").value
+            passwordConfirm: document.getElementById("passwordConfirm").value,
+            address: document.getElementById("address").value,
+            latitude: document.getElementById("latitude").value,
+            longitude: document.getElementById("longitude").value
         };
+
 
         // 유효성 검사
         if (formData.password !== formData.passwordConfirm) {

@@ -40,6 +40,9 @@ public class UserService {
                 .department(userDTO.getDepartment())
                 .position(userDTO.getPosition())
                 .email(userDTO.getEmail())
+                .longitude(userDTO.getLongitude())
+                .latitude(userDTO.getLatitude())
+                .address(userDTO.getAddress())
                 .build();
 
         // UserDTO에서 받은 역할을 Role 엔티티로 변환

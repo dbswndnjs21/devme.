@@ -1,6 +1,8 @@
 package com.erp.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@Builder
 public class Schedule {
 
     @Id @GeneratedValue
