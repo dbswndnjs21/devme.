@@ -1,56 +1,342 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>스터디 리스트</title>
-    <link rel="stylesheet" href="/css/studyList.css">
-    <script>
-        // 페이지 로드 시 실행되는 함수
-        window.onload = function() {
-            // 서버에서 스터디 목록을 가져오기 위한 fetch 요청
-            fetch('/api/studyList')
-                .then(response => response.json())  // 응답을 JSON으로 변환
-                .then(data => {
-                    const studies = data;
-                    const tableBody = document.getElementById('studyTableBody');
+    <title>스터디 목록</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
 
-                    // 데이터를 테이블에 삽입
-                    studies.forEach(study => {
-                        const row = document.createElement('tr');
-
-                        row.innerHTML = `
-                            <td><a href="/study/detail/${study.id}">${study.title}</a></td>
-                            <td>${study.description}</td>
-                            <td>${study.maxMembers}</td>
-                            <td>${study.createdBy.username}</td>
-                            <td>${study.createdAt}</td>
-                        `;
-
-                        tableBody.appendChild(row);
-                    });
-                })
-                .catch(error => {
-                    console.error("Error fetching data:", error);
-                });
+        /* 검색 영역 */
+        .search-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-    </script>
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            min-width: 250px;
+        }
+        .search-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .search-btn:hover { background: #0056b3; }
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        /* 결과 정보 */
+        .results-info {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 스터디 카드 */
+        .study-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .study-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .study-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .study-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .study-desc {
+            color: #666;
+            margin: 8px 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .study-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .study-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        .status-inprogress { background: #e3f2fd; color: #1976d2; }
+        .status-completed { background: #f3e5f5; color: #7b1fa2; }
+
+        /* 페이징 */
+        .pagination {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .pagination button {
+            padding: 8px 12px;
+            margin: 0 2px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button:hover { background: #f8f9fa; }
+        .pagination button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        /* 로딩 & 빈 상태 */
+        .loading, .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .empty-state {
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-<h1>스터디 목록</h1>
-<table border="1">
-    <thead>
-    <tr>
-        <th>제목</th>
-        <th>설명</th>
-        <th>최대 인원</th>
-        <th>작성자</th>
-        <th>생성일</th>
-    </tr>
-    </thead>
-    <tbody id="studyTableBody">
-    <!-- 데이터가 삽입될 곳 -->
-    </tbody>
-</table>
+<div class="container">
+    <h1>📚 스터디 목록</h1>
+
+    <!-- 검색 영역 -->
+    <div class="search-section">
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input"
+                   placeholder="스터디 제목, 내용, 목표, 사용 도구로 검색...">
+            <button onclick="searchStudies()" class="search-btn">🔍 검색</button>
+            <select id="statusFilter" class="filter-select" onchange="searchStudies()">
+                <option value="">전체 상태</option>
+                <option value="INPROGRESS">진행중</option>
+                <option value="COMPLETED">완료</option>
+            </select>
+            <button onclick="resetSearch()" class="search-btn" style="background: #6c757d;">초기화</button>
+        </div>
+    </div>
+
+    <!-- 결과 정보 -->
+    <div id="resultsInfo" class="results-info"></div>
+
+    <!-- 스터디 목록 -->
+    <div id="studyList" class="study-grid">
+        <div class="loading">스터디 목록을 불러오는 중...</div>
+    </div>
+
+    <!-- 페이징 -->
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<script>
+    let currentPage = 0;
+    let currentKeyword = '';
+    let currentStatus = '';
+    let isSearchMode = false;
+
+    // 페이지 로드 시 전체 목록 조회
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAllStudies();
+    });
+
+    // 전체 스터디 목록 조회 (기존 API 사용)
+    async function loadAllStudies(page = 0) {
+        try {
+            const response = await fetch('/api/studyList');
+            const studies = await response.json();
+
+            if (Array.isArray(studies)) {
+                displayStudies(studies);
+                updateResultsInfo(studies.length, 0, false);
+            } else {
+                showEmptyState();
+            }
+        } catch (error) {
+            console.error('스터디 목록 조회 실패:', error);
+            showEmptyState('스터디 목록을 불러오는데 실패했습니다.');
+        }
+    }
+
+    // 검색 실행
+    async function searchStudies(page = 0) {
+        const keyword = document.getElementById('searchInput').value.trim();
+        const status = document.getElementById('statusFilter').value;
+
+        currentPage = page;
+        currentKeyword = keyword;
+        currentStatus = status;
+        isSearchMode = keyword !== '' || status !== '';
+
+        if (!isSearchMode) {
+            // 검색어와 필터가 모두 비어있으면 전체 목록 조회
+            loadAllStudies();
+            return;
+        }
+
+        try {
+            let url = `/api/search/studies?page=${page}&size=12`;
+            if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+            if (status) url += `&status=${status}`;
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                displayStudies(result.data.content);
+                displayPagination(result.data);
+                updateResultsInfo(result.data.totalElements, result.data.number, true);
+            } else {
+                showEmptyState('검색 결과가 없습니다.');
+            }
+        } catch (error) {
+            console.error('검색 실패:', error);
+            showEmptyState('검색 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 검색 초기화
+    function resetSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        currentKeyword = '';
+        currentStatus = '';
+        isSearchMode = false;
+        currentPage = 0;
+        loadAllStudies();
+    }
+
+    // 스터디 목록 화면에 표시
+    function displayStudies(studies) {
+        const container = document.getElementById('studyList');
+
+        if (!studies || studies.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        container.innerHTML = studies.map(study => {
+            // Elasticsearch 결과와 DB 결과 형태 통일
+            const title = study.title;
+            const description = study.description;
+            const maxMembers = study.maxMembers;
+            const status = study.status;
+            const createdBy = study.createdByUsername || (study.createdBy && study.createdBy.username);
+
+            return `
+                    <div class="study-card" onclick="goToStudyDetail(${study.id || study.id})">
+                        <div class="study-title">${title}</div>
+                        <div class="study-desc">${description || '설명이 없습니다.'}</div>
+                        <div class="study-meta">
+                            👤 ${createdBy} | 👥 최대 ${maxMembers}명
+                            <span class="study-status status-${status.toLowerCase()}">${status}</span>
+                        </div>
+                    </div>
+                `;
+        }).join('');
+    }
+
+    // 결과 정보 업데이트
+    function updateResultsInfo(totalElements, currentPage, isSearch) {
+        const info = document.getElementById('resultsInfo');
+        if (isSearch) {
+            info.innerHTML = `🔍 검색 결과: <strong>${totalElements}개</strong> (${currentPage + 1} 페이지)`;
+        } else {
+            info.innerHTML = `📋 전체 스터디: <strong>${totalElements}개</strong>`;
+        }
+    }
+
+    // 빈 상태 표시
+    function showEmptyState(message = '등록된 스터디가 없습니다.') {
+        const container = document.getElementById('studyList');
+        container.innerHTML = `<div class="empty-state">${message}</div>`;
+        document.getElementById('pagination').innerHTML = '';
+        document.getElementById('resultsInfo').innerHTML = '';
+    }
+
+    // 페이징 표시 (검색 모드일 때만)
+    function displayPagination(pageData) {
+        const container = document.getElementById('pagination');
+
+        if (!isSearchMode || pageData.totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const totalPages = pageData.totalPages;
+        const currentPage = pageData.number;
+
+        let paginationHtml = '';
+
+        // 이전 버튼
+        if (currentPage > 0) {
+            paginationHtml += `<button onclick="searchStudies(${currentPage - 1})">‹ 이전</button>`;
+        }
+
+        // 페이지 번호들
+        const startPage = Math.max(0, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 3);
+
+        for (let i = startPage; i < endPage; i++) {
+            const isActive = i === currentPage ? 'active' : '';
+            paginationHtml += `<button class="${isActive}" onclick="searchStudies(${i})">${i + 1}</button>`;
+        }
+
+        // 다음 버튼
+        if (currentPage < totalPages - 1) {
+            paginationHtml += `<button onclick="searchStudies(${currentPage + 1})">다음 ›</button>`;
+        }
+
+        container.innerHTML = paginationHtml;
+    }
+
+    // 스터디 상세 페이지로 이동
+    function goToStudyDetail(studyId) {
+        window.location.href = `/study/detail/${studyId}`;
+    }
+
+    // 엔터키로 검색
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchStudies(0);
+        }
+    });
+</script>
 </body>
 </html>

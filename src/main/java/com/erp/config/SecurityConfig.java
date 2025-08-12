@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/loginForm", "/doLogin","/home","/", "/join", "/css/**", "/api/join").permitAll()
                         .requestMatchers("/ws/**", "/topic/**", "/queue/**", "/user/**").permitAll()
                         .requestMatchers("/employees/**").hasRole("ADMIN")
+                        .requestMatchers("/api/search/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/loginForm")

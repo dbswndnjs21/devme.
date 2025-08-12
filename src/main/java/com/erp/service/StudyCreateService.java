@@ -22,6 +22,7 @@ public class StudyCreateService {
     private final StudyRepository studyRepository;
     private final StudyDetailRepository studyDetailRepository;
     private final StudyMemberRepository studyMemberRepository;
+    private final StudySearchService studySearchService;
 
     @Transactional
     public void studyCreate(StudyCreateRequestDto dto, User user) {
@@ -33,7 +34,7 @@ public class StudyCreateService {
                 .status(StudyStatus.INPROGRESS)
                 .build();
 
-        studyRepository.save(study);
+        Study savedStudy = studyRepository.save(study);
 
         StudyDetail studyDetail = StudyDetail.builder()
                 .study(study)
@@ -53,5 +54,8 @@ public class StudyCreateService {
                 .joinedAt(LocalDateTime.now())
                 .build();
         studyMemberRepository.save(studyMember);
+
+        // Elasticsearch 인덱싱 추가
+        studySearchService.indexStudy(savedStudy);
     }
 }
