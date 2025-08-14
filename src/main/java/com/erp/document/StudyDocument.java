@@ -6,11 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Document(indexName = "studies")
 @Getter
@@ -21,7 +22,7 @@ public class StudyDocument {
     
     @Id
     private String id;
-    
+
     @Field(type = FieldType.Text, analyzer = "standard")
     private String title;
     
@@ -29,16 +30,16 @@ public class StudyDocument {
     private String description;
     
     @Field(type = FieldType.Integer)
-    private Integer maxMembers;
+    private int maxMembers;
     
     @Field(type = FieldType.Keyword)
     private String status;
     
-    @Field(type = FieldType.Text)
-    private String createdByUsername;
-    
-    @Field(type = FieldType.Date)
-    private LocalDateTime createdAt;
+    @Field(type = FieldType.Long)
+    private Long createdBy;
+
+    @Field(type = FieldType.Date, format = DateFormat.date)
+    private LocalDate createdAt;
     
     @Field(type = FieldType.Text, analyzer = "standard")
     private String goal;
@@ -52,13 +53,13 @@ public class StudyDocument {
     // Entity -> Document 변환
     public static StudyDocument fromEntity(Study study) {
         return StudyDocument.builder()
-                .id(study.getId().toString())
+                .id(study.getId().toString())  // String으로 변환
                 .title(study.getTitle())
                 .description(study.getDescription())
                 .maxMembers(study.getMaxMembers())
                 .status(study.getStatus().name())
-                .createdByUsername(study.getCreatedBy().getUsername())
-                .createdAt(study.getCreatedAt())
+                .createdBy(study.getCreatedBy().getId())
+                .createdAt(study.getCreatedAt() != null ? study.getCreatedAt().toLocalDate() : LocalDate.now())
                 .goal(study.getDetail() != null ? study.getDetail().getGoal() : "")
                 .tools(study.getDetail() != null ? study.getDetail().getTools() : "")
                 .department(study.getCreatedBy().getDepartment())
