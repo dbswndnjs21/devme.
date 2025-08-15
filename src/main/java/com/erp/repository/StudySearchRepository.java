@@ -34,7 +34,7 @@ public interface StudySearchRepository extends ElasticsearchRepository<StudyDocu
           "bool": {
             "should": [
               {
-                "match": {
+                "match_phrase": {
                   "title": {
                     "query": "?0",
                     "analyzer": "korean_search",
