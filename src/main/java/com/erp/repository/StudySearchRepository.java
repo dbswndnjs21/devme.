@@ -27,4 +27,51 @@ public interface StudySearchRepository extends ElasticsearchRepository<StudyDocu
         }
         """)
     Page<StudyDocument> searchByKeyword(String keyword, Pageable pageable);
+
+    // 한글 부분검색을 위한 새로운 메서드 추가
+    @Query("""
+        {
+          "bool": {
+            "should": [
+              {
+                "match": {
+                  "title": {
+                    "query": "?0",
+                    "analyzer": "korean_search",
+                    "boost": 3
+                  }
+                }
+              },
+              {
+                "match": {
+                  "description": {
+                    "query": "?0",
+                    "analyzer": "korean_search",
+                    "boost": 2
+                  }
+                }
+              },
+              {
+                "match": {
+                  "goal": {
+                    "query": "?0",
+                    "analyzer": "korean_search"
+                  }
+                }
+              },
+              {
+                "match": {
+                  "tools": {
+                    "query": "?0",
+                    "analyzer": "korean_search"
+                  }
+                }
+              }
+            ],
+            "minimum_should_match": 1
+          }
+        }
+        """)
+    Page<StudyDocument> searchByKoreanKeyword(String keyword, Pageable pageable);
+
 }

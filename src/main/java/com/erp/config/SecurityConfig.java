@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**", "/topic/**", "/queue/**", "/user/**").permitAll()
                         .requestMatchers("/employees/**").hasRole("ADMIN")
                         .requestMatchers("/api/search/**").permitAll()
+                        .requestMatchers("/dev/**").permitAll() // 개발일때 수동 인덱싱 경로
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/loginForm")

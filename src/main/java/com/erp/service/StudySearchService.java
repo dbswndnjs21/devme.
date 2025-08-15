@@ -32,8 +32,8 @@ public class StudySearchService {
             // 키워드가 없으면 전체 조회
             return studySearchRepository.findAll(pageable);
         } else {
-            // 키워드 검색
-            return studySearchRepository.searchByKeyword(keyword.trim(), pageable);
+            // 한글, 부분 검색 가능
+            return studySearchRepository.searchByKoreanKeyword(keyword.trim(), pageable);
         }
     }
 
@@ -48,12 +48,12 @@ public class StudySearchService {
     @Transactional(readOnly = true)
     public void indexAllStudies() {
         log.info("모든 스터디 인덱싱 시작...");
-        
+
         List<Study> studies = studyRepository.findAll();
         List<StudyDocument> documents = studies.stream()
                 .map(StudyDocument::fromEntity)
                 .collect(Collectors.toList());
-        
+
         studySearchRepository.saveAll(documents);
         log.info("총 {}개 스터디 인덱싱 완료", documents.size());
     }
