@@ -28,7 +28,6 @@ public class StudyJoinService {
     private final StudyJoinRequestRepository studyJoinRequestRepository;
     private final UserRepository userRepository;
     private final StudyMemberRepository studyMemberRepository;
-    private final RabbitTemplate rabbitTemplate;
     private final NotificationService notificationService;
 
 
@@ -52,7 +51,7 @@ public class StudyJoinService {
 
         studyJoinRequestRepository.save(request);
 
-//        // 🔔 알림 메시지 전송 (스터디장에게)
+//        // 알림 메시지 전송 (스터디장에게)
 //        String content = String.format("%s님이 '%s' 스터디에 참여 신청했습니다.",
 //                user.getUsername(), study.getTitle());
 //
@@ -70,7 +69,7 @@ public class StudyJoinService {
 //            System.out.println("RabbitMQ 메시지 발행 실패!");
 //        }
 
-        // 🔔 알림 발송
+        // 알림 발송
         notificationService.sendNotification(
                 study.getCreatedBy().getId(),
                 String.format("%s님이 '%s' 스터디에 참여 신청했습니다.",

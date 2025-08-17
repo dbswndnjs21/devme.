@@ -57,7 +57,7 @@ public class ElasticsearchIndexService {
         Map<String, Object> filter = new HashMap<>();
         Map<String, Object> edgeNgramFilter = new HashMap<>();
         edgeNgramFilter.put("type", "edge_ngram");
-        edgeNgramFilter.put("min_gram", 1);
+        edgeNgramFilter.put("min_gram", 2);
         edgeNgramFilter.put("max_gram", 10);
         filter.put("edge_ngram_filter", edgeNgramFilter);
 
