@@ -17,4 +17,6 @@ public class StudyCreateRequestDto {
     private String tools;
     private String rules;
     private String schedule;
+    private String baseAddress;   // 좌표 변환용
+    private String detailAddress; // DB 저장용
 }
