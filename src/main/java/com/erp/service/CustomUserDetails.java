@@ -1,5 +1,6 @@
 package com.erp.service;
 
+import com.erp.dto.HomeUserInfo;
 import com.erp.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -52,5 +53,17 @@ public class CustomUserDetails implements UserDetails {
 
     public String getDepartment() {
         return user.getDepartment();
+    }
+
+    public HomeUserInfo toHomeUserInfo() {
+        return new HomeUserInfo(
+                user.getId(),
+                user.getUsername(),
+                user.getPosition(),
+                user.getDepartment(),
+                user.getAddress(),
+                user.getLatitude(),
+                user.getLongitude()
+        );
     }
 }

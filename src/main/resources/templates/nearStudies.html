@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내 주변 스터디 찾기</title>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0d2a3746658b4fd4322de645ff7515c4"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: #fff;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .home-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .home-btn:hover {
+            background: #0056b3;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .filter-section {
+            margin-bottom: 15px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .filter-col {
+            flex: 1;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .filter-select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .study-count {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .refresh-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+        }
+
+        .study-list {
+            padding: 0;
+            margin: 0;
+        }
+
+        .study-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .study-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .study-item.selected {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+
+        .study-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .study-info {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .study-distance {
+            font-size: 12px;
+            color: #007bff;
+            font-weight: 500;
+        }
+
+        .study-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .status-recruiting {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-ongoing {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .map-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .map-btn:hover {
+            background: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .no-studies {
+            padding: 40px 20px;
+            text-align: center;
+            color: #666;
+        }
+
+        .study-creator {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .study-address {
+            font-size: 12px;
+            color: #777;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+<!-- 헤더 -->
+<div class="header">
+    <h1>🔍 내 주변 스터디 찾기</h1>
+    <a href="/" class="home-btn">🏠 홈으로</a>
+</div>
+
+<div class="container">
+    <!-- 사이드바 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-col">
+                        <label class="filter-label">반경</label>
+                        <select id="radius" class="filter-select" onchange="loadNearbyStudies()">
+                            <option value="1">1km</option>
+                            <option value="3">3km</option>
+                            <option value="5" selected>5km</option>
+                            <option value="10">10km</option>
+                            <option value="20">20km</option>
+                        </select>
+                    </div>
+                    <div class="filter-col">
+                        <label class="filter-label">상태</label>
+                        <select id="status" class="filter-select" onchange="loadNearbyStudies()">
+                            <option value="">전체</option>
+                            <option value="INPROGRESS" selected>진행중</option>
+                            <option value="COMPLETED">종료</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="study-count">
+                    <span>총 <span id="studyCount">0</span>개 스터디</span>
+                    <button class="refresh-btn" onclick="loadNearbyStudies()">새로고침</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="studyList" class="study-list">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div style="margin-top: 10px;">스터디를 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 지도 영역 -->
+    <div class="map-container">
+        <div class="map-controls">
+            <button class="map-btn" onclick="centerToUser()">📍 내 위치</button>
+            <button class="map-btn" onclick="showAllStudies()">🔍 전체보기</button>
+        </div>
+        <div id="map"></div>
+    </div>
+</div>
+
+<script>
+    let map;
+    let userMarker;
+    let studyMarkers = [];
+    let radiusCircle;
+    let currentStudies = [];
+    let selectedStudyId = null;
+    let currentUser = null;
+
+    // 페이지 로드시 초기화
+    window.onload = function() {
+        // 현재 로그인한 사용자 정보 가져오기
+        fetch("/home")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("로그인이 필요합니다.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                currentUser = data;
+                console.log("로그인한 사용자:", data);
+                initMap();
+            })
+            .catch(error => {
+                console.error("사용자 정보 로드 오류:", error);
+                showError("로그인이 필요합니다. 홈페이지로 이동하여 로그인해주세요.");
+            });
+    };
+
+    // 지도 초기화
+    function initMap() {
+        const container = document.getElementById('map');
+        const options = {
+            center: new kakao.maps.LatLng(37.5665, 126.9780),
+            level: 5
+        };
+
+        map = new kakao.maps.Map(container, options);
+        loadNearbyStudies();
+    }
+
+    // 근처 스터디 불러오기
+    async function loadNearbyStudies() {
+        if (!currentUser) {
+            showError("사용자 정보를 불러올 수 없습니다.");
+            return;
+        }
+
+        const radius = document.getElementById('radius').value;
+        const status = document.getElementById('status').value;
+
+        showLoading(true);
+
+        try {
+            let url = `/api/studies/nearby?userId=${currentUser.id}&radiusKm=${radius}`;
+            if (status) {
+                url += `&status=${status}`;
+            }
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            displayUserLocation(data.userLocation);
+            displayStudies(data.studies);
+            displayStudyList(data.studies);
+            drawRadiusCircle(data.userLocation, radius);
+
+            currentStudies = data.studies;
+            document.getElementById('studyCount').textContent = data.totalCount;
+
+            console.log(`${data.totalCount}개의 스터디를 찾았습니다.`);
+
+        } catch (error) {
+            console.error('스터디 로딩 오류:', error);
+            showError('스터디를 불러오는데 실패했습니다: ' + error.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // 로딩 표시
+    function showLoading(show) {
+        const studyList = document.getElementById('studyList');
+        if (show) {
+            studyList.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div style="margin-top: 10px;">스터디를 불러오는 중...</div>
+                    </div>
+                `;
+        }
+    }
+
+    // 에러 표시
+    function showError(message) {
+        const studyList = document.getElementById('studyList');
+        studyList.innerHTML = `
+                <div class="error">
+                    ⚠️ ${message}
+                </div>
+            `;
+    }
+
+    // 사용자 위치 표시
+    function displayUserLocation(userLocation) {
+        const position = new kakao.maps.LatLng(userLocation.latitude, userLocation.longitude);
+
+        if (userMarker) {
+            userMarker.setMap(null);
+        }
+
+        // 사용자 위치 마커 (빨간색)
+        const imageSrc = 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png';
+        const imageSize = new kakao.maps.Size(64, 69);
+        const imageOption = { offset: new kakao.maps.Point(27, 69) };
+        const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+
+        userMarker = new kakao.maps.Marker({
+            position: position,
+            map: map,
+            image: markerImage
+        });
+
+        // 사용자 위치 인포윈도우
+        const userInfoWindow = new kakao.maps.InfoWindow({
+            content: `
+                    <div style="padding:10px; min-width:150px; text-align:center;">
+                        <strong>🏠 내 위치</strong><br>
+                        <small>${userLocation.address || '주소 정보 없음'}</small>
+                    </div>
+                `
+        });
+
+        kakao.maps.event.addListener(userMarker, 'click', function() {
+            userInfoWindow.open(map, userMarker);
+        });
+
+        // 지도 중심을 사용자 위치로 이동
+        map.setCenter(position);
+    }
+
+    // 스터디 마커 표시
+    function displayStudies(studies) {
+        // 기존 마커 제거
+        studyMarkers.forEach(marker => marker.setMap(null));
+        studyMarkers = [];
+
+        studies.forEach(study => {
+            const position = new kakao.maps.LatLng(
+                study.locationLatitude,
+                study.locationLongitude
+            );
+
+            // 스터디 마커 (파란색 기본 마커)
+            const marker = new kakao.maps.Marker({
+                position: position,
+                map: map
+            });
+
+            // 인포윈도우 생성
+            const statusText = getStatusText(study.status);
+            const infoWindow = new kakao.maps.InfoWindow({
+                content: `
+                        <div style="padding:12px; min-width:200px;">
+                            <div style="font-weight:bold; margin-bottom:5px;">${study.title}</div>
+                            <div style="color:#666; font-size:12px; margin-bottom:3px;">
+                                👤 ${study.createdByUsername} | ${statusText}
+                            </div>
+                            <div style="color:#666; font-size:12px; margin-bottom:3px;">
+                                📍 ${study.distanceKm}km 거리
+                            </div>
+                            <div style="color:#666; font-size:11px;">
+                                ${study.locationAddress || '위치 정보 없음'}
+                            </div>
+                            <div style="margin-top:8px;">
+                                <button onclick="viewStudyDetail(${study.id})"
+                                        style="background:#007bff; color:white; border:none;
+                                               padding:4px 8px; border-radius:3px; cursor:pointer;">
+                                    상세보기
+                                </button>
+                            </div>
+                        </div>
+                    `
+            });
+
+            // 마커 클릭 이벤트
+            kakao.maps.event.addListener(marker, 'click', function() {
+                // 다른 인포윈도우들 닫기
+                studyMarkers.forEach(m => {
+                    if (m.infoWindow) {
+                        m.infoWindow.close();
+                    }
+                });
+
+                infoWindow.open(map, marker);
+                selectStudyInList(study.id);
+            });
+
+            marker.infoWindow = infoWindow;
+            studyMarkers.push(marker);
+        });
+    }
+
+    // 사이드바 스터디 목록 표시
+    function displayStudyList(studies) {
+        const studyList = document.getElementById('studyList');
+
+        if (studies.length === 0) {
+            studyList.innerHTML = `
+                    <div class="no-studies">
+                        😔 근처에 스터디가 없습니다.<br>
+                        <small>반경을 늘려서 다시 검색해보세요.</small>
+                    </div>
+                `;
+            return;
+        }
+
+        const html = studies.map(study => {
+            const statusClass = `status-${study.status.toLowerCase()}`;
+            const statusText = getStatusText(study.status);
+
+            return `
+                    <div class="study-item" data-study-id="${study.id}" onclick="focusStudy(${study.locationLatitude}, ${study.locationLongitude}, ${study.id})">
+                        <div class="study-title">${study.title}</div>
+                        <div class="study-info">
+                            <span class="study-status ${statusClass}">${statusText}</span>
+                            <span>👤 ${study.maxMembers}명</span>
+                        </div>
+                        <div class="study-creator">👤 ${study.createdByUsername}</div>
+                        <div class="study-address">📍 ${study.locationAddress || '위치 정보 없음'}</div>
+                        <div class="study-distance">🚶 ${study.distanceKm}km 거리</div>
+                    </div>
+                `;
+        }).join('');
+
+        studyList.innerHTML = html;
+    }
+
+    // 상태 텍스트 변환
+    function getStatusText(status) {
+        switch(status) {
+            case 'INPROGRESS': return '진행중';
+            case 'COMPLETED': return '종료';
+            default: return status;
+        }
+    }
+
+    // 반경 원 그리기
+    function drawRadiusCircle(userLocation, radius) {
+        if (radiusCircle) {
+            radiusCircle.setMap(null);
+        }
+
+        const center = new kakao.maps.LatLng(userLocation.latitude, userLocation.longitude);
+
+        radiusCircle = new kakao.maps.Circle({
+            center: center,
+            radius: radius * 1000, // km를 m로 변환
+            strokeWeight: 2,
+            strokeColor: '#007bff',
+            strokeOpacity: 0.8,
+            fillColor: '#cfe2ff',
+            fillOpacity: 0.2
+        });
+
+        radiusCircle.setMap(map);
+    }
+
+    // 스터디 위치로 지도 이동 및 선택
+    function focusStudy(lat, lng, studyId) {
+        const position = new kakao.maps.LatLng(lat, lng);
+        map.setCenter(position);
+        map.setLevel(3); // 줌인
+
+        selectStudyInList(studyId);
+
+        // 해당 스터디 마커의 인포윈도우 열기
+        const study = currentStudies.find(s => s.id === studyId);
+        const markerIndex = currentStudies.indexOf(study);
+        if (markerIndex >= 0 && studyMarkers[markerIndex]) {
+            studyMarkers[markerIndex].infoWindow.open(map, studyMarkers[markerIndex]);
+        }
+    }
+
+    // 리스트에서 스터디 선택 표시
+    function selectStudyInList(studyId) {
+        // 기존 선택 제거
+        document.querySelectorAll('.study-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+
+        // 새 선택 추가
+        const selectedItem = document.querySelector(`[data-study-id="${studyId}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+        }
+
+        selectedStudyId = studyId;
+    }
+
+    // 내 위치로 지도 중심 이동
+    function centerToUser() {
+        if (userMarker) {
+            map.setCenter(userMarker.getPosition());
+            map.setLevel(5);
+        }
+    }
+
+    // 모든 스터디가 보이도록 지도 범위 조정
+    function showAllStudies() {
+        if (studyMarkers.length === 0) return;
+
+        const bounds = new kakao.maps.LatLngBounds();
+
+        // 사용자 위치 포함
+        if (userMarker) {
+            bounds.extend(userMarker.getPosition());
+        }
+
+        // 모든 스터디 마커 포함
+        studyMarkers.forEach(marker => {
+            bounds.extend(marker.getPosition());
+        });
+
+        map.setBounds(bounds);
+    }
+
+    // 스터디 상세보기 (추후 구현)
+    function viewStudyDetail(studyId) {
+        // 여기에 스터디 상세 페이지로 이동하는 로직 추가
+        console.log('스터디 상세보기:', studyId);
+        alert(`스터디 ID ${studyId}의 상세 페이지로 이동합니다. (추후 구현)`);
+        // window.location.href = `/studies/${studyId}`;
+    }
+</script>
+</body>
+</html>

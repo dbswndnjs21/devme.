@@ -35,7 +35,6 @@ public class HomeController {
         if (customUserDetails == null) {
             return ResponseEntity.status(401).build(); // 비로그인 상태 처리
         }
-        HomeUserInfo homeUserInfo = new HomeUserInfo(customUserDetails.getUsername(), customUserDetails.getPosition(),customUserDetails.getDepartment());
-        return ResponseEntity.ok(homeUserInfo);
+        return ResponseEntity.ok(customUserDetails.toHomeUserInfo());
     }
 }
