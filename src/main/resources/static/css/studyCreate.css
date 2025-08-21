@@ -60,3 +60,44 @@ button:hover {
     font-weight: bold;
     color: #2a7d2e;
 }
+
+.address-group {
+    display: flex;
+    gap: 10px; /* 입력칸과 버튼 사이 간격 */
+    margin-bottom: 10px;
+}
+
+.address-group input[type="text"] {
+    flex: 8; /* 80% */
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.address-group button {
+    flex: 2; /* 20% */
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap; /* 버튼 글자 줄바꿈 방지 */
+    transition: background-color 0.3s ease;
+}
+
+.address-group button:hover {
+    background-color: #45a049;
+}
+
+#detailAddress {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+

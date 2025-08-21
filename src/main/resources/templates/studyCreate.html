@@ -36,11 +36,15 @@
 
   <!-- 주소 검색 섹션 -->
   <label for="address">스터디 장소 (선택사항):</label><br>
-  <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-    <input type="text" id="address" name="address" placeholder="오프라인 스터디인 경우 주소 검색 버튼을 클릭해주세요" readonly style="flex: 1; width: 300px;">
-    <button type="button" id="addressSearchBtn" style="white-space: nowrap; padding: 8px 12px;">주소 검색</button>
+  <div class="address-group">
+    <input type="text" id="address" name="address"
+           placeholder="오프라인 스터디인 경우 주소 검색 버튼을 클릭해주세요"
+           readonly>
+    <button type="button" id="addressSearchBtn">주소 검색</button>
   </div>
-  <input type="text" id="detailAddress" name="detailAddress" placeholder="상세 주소 (건물명, 층수 등)" style="width: 100%; margin-bottom: 10px;"><br>
+  <input type="text" id="detailAddress" name="detailAddress"
+         placeholder="상세 주소 (건물명, 층수 등)">
+
 
   <button type="submit">생성하기</button>
 </form>
