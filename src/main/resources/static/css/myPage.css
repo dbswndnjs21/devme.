@@ -71,6 +71,7 @@ a:hover {
     margin-top: 30px;
 }
 
+/* 테이블 스타일 */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -92,6 +93,115 @@ table td {
     background-color: #fafafa;
 }
 
+/* 테이블 내 행 마우스 오버 */
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* 내 정보 관리 섹션 스타일 */
+#editProfileSection {
+    margin-top: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+}
+
+#editProfileSection h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+    font-size: 20px;
+}
+
+/* 폼 스타일 */
+#editProfileForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: end;
+}
+
+/* 전체 너비를 차지하는 필드들 */
+#editProfileForm .full-width {
+    grid-column: 1 / -1;
+}
+
+#editProfileForm label {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 4px;
+    font-size: 13px;
+    display: block;
+}
+
+#editProfileForm input[type="text"],
+#editProfileForm input[type="email"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+#editProfileForm input[type="text"]:focus,
+#editProfileForm input[type="email"]:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+/* 주소 검색 관련 스타일 */
+.address-input-group {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.address-input-group input {
+    flex: 1;
+}
+
+#addressSearchBtn {
+    background-color: #17a2b8;
+    color: white;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+#addressSearchBtn:hover {
+    background-color: #138496;
+}
+
+/* 읽기 전용 입력 필드 */
+#editProfileForm input[readonly] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* 필수 필드 표시 */
+#editProfileForm label[for="phone"]::after {
+    content: " *";
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* 폼 그룹 스타일 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
 /* 버튼 스타일 */
 button {
     padding: 8px 15px;
@@ -99,6 +209,22 @@ button {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#editProfileForm button[type="submit"] {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 25px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-top: 5px;
+    justify-self: start;
+}
+
+#editProfileForm button[type="submit"]:hover {
+    background-color: #2980b9;
 }
 
 button.approveBtn {
@@ -119,11 +245,6 @@ button.rejectBtn:hover {
     background-color: #c82333;
 }
 
-/* 테이블 내 행 마우스 오버 */
-table tr:hover {
-    background-color: #f1f1f1;
-}
-
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     #sidebar {
@@ -134,11 +255,48 @@ table tr:hover {
         padding: 15px;
     }
 
+    #editProfileSection {
+        padding: 15px;
+        margin-top: 15px;
+    }
+
+    #editProfileForm {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    #editProfileForm input[type="text"],
+    #editProfileForm input[type="email"] {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    #editProfileForm button[type="submit"] {
+        padding: 10px 20px;
+        font-size: 14px;
+        justify-self: stretch;
+    }
+
     table th, table td {
         padding: 8px;
     }
 
     button {
         font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    #editProfileSection {
+        padding: 15px;
+        max-width: none;
+    }
+
+    #editProfileForm {
+        gap: 10px;
+    }
+
+    #editProfileForm button[type="submit"] {
+        justify-self: stretch;
     }
 }

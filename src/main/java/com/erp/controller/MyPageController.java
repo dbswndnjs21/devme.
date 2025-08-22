@@ -1,14 +1,11 @@
 package com.erp.controller;
 
-import com.erp.dto.StudyDto;
-import com.erp.dto.StudyJoinRequestListDto;
+import com.erp.dto.*;
 import com.erp.service.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -19,6 +16,7 @@ public class MyPageController {
 
     private final StudyJoinService studyJoinService;
     private final StudyMemberService studyMemberService;
+    private final UserService userService;
 
     @GetMapping("/myPage")
     public String myPage() {
@@ -56,5 +54,33 @@ public class MyPageController {
     @GetMapping("/study/main/{id}")
     public String studyMainForm(@PathVariable Long id) {
         return "studyMain";
+    }
+
+    @GetMapping("/api/myProfile")
+    @ResponseBody
+    public ApiResponse<UserProfileResponseDto> getMyProfileSimple(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            String username = customUserDetails.getUsername();
+            UserProfileResponseDto profile = userService.getMyProfile(username);
+            return ApiResponse.success("내 정보 조회 성공", profile);
+        } catch (Exception e) {
+            return ApiResponse.fail("내 정보 불러오기 실패: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 내 프로필 수정
+     */
+    @PutMapping("/api/updateProfile")
+    @ResponseBody
+    public ApiResponse<?> updateProfileSimple(@RequestBody UserProfileRequestDto requestDto,
+                                                 @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
+            String username = customUserDetails.getUsername();
+            userService.updateProfile(username, requestDto);
+            return ApiResponse.success("정보가 수정되었습니다.");
+        } catch (Exception e) {
+            return ApiResponse.fail("정보 수정 실패: " + e.getMessage());
+        }
     }
 }

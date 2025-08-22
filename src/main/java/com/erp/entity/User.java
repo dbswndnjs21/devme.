@@ -66,5 +66,20 @@ public class User {
     @JsonManagedReference
     private List<Attendance> attendances = new ArrayList<>();
 
+    /**
+     * 프로필 정보 업데이트
+     */
+    public void updateProfile(String phone, String email, String department, String position, String address) {
+        this.phone = phone;
+        this.email = email;
+        this.department = department;
+        this.position = position;
+        this.address = address;
+    }
+
+    public void updateLocation(Double latitude, Double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
 }
