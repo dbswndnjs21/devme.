@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Home</title>
     <link rel="stylesheet" href="/css/home.css">
+    <link rel="stylesheet" href="/css/chatbot.css">
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
@@ -64,7 +65,9 @@
         </div>
     </div>
 </div>
+
 <script>
+    // ========== 기존 WebSocket 및 로그인 관련 스크립트 ==========
     function connectWebSocket(username) {
         const socket = new SockJS('/ws');
         const stompClient = Stomp.over(socket);
@@ -73,8 +76,8 @@
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
             stompClient.subscribe(`/topic/notifications.${username}`, function (message) {
-                    console.log("구독 콜백 호출됨 : ", message);
-                    console.log("메시지 수신:", message.body);
+                console.log("구독 콜백 호출됨 : ", message);
+                console.log("메시지 수신:", message.body);
                 // const notification = JSON.parse(message.body);
                 const notification = message.body;
                 showNotification(notification);
@@ -148,6 +151,248 @@
             .catch(error => {
                 console.error("에러:", error);
             });
+    });
+
+    // ========== 챗봇 기능 ==========
+    class Chatbot {
+        constructor() {
+            this.isOpen = false;
+            this.messages = [];
+            this.userLocation = null;
+            this.init();
+            this.getUserLocation();
+        }
+
+        init() {
+            // HTML 요소 추가
+            this.createChatbotHTML();
+
+            // 이벤트 리스너 설정
+            this.setupEventListeners();
+
+            // 초기 메시지
+            this.addMessage('bot', '안녕하세요! 🎓 DevMe 스터디 매칭 챗봇입니다. 무엇을 도와드릴까요?');
+        }
+
+        createChatbotHTML() {
+            const chatbotHTML = `
+                <button class="chatbot-button" id="chatbotToggle">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3 .97 4.29L2 22l5.71-.97C9 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.38 0-2.67-.36-3.79-.97l-.27-.16-2.93.5.5-2.93-.16-.27C4.36 14.67 4 13.38 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+                        <circle cx="9" cy="12" r="1"/>
+                        <circle cx="12" cy="12" r="1"/>
+                        <circle cx="15" cy="12" r="1"/>
+                    </svg>
+                </button>
+
+                <div class="chatbot-container" id="chatbotContainer">
+                    <div class="chatbot-header">
+                        <h3>💬 스터디 챗봇</h3>
+                        <button class="chatbot-close" id="chatbotClose">×</button>
+                    </div>
+
+                    <div class="chatbot-messages" id="chatbotMessages">
+                        <!-- 메시지가 여기에 추가됩니다 -->
+                    </div>
+
+                    <div class="chatbot-input-area">
+                        <div class="chatbot-input-wrapper">
+                            <input
+                                type="text"
+                                class="chatbot-input"
+                                id="chatbotInput"
+                                placeholder="메시지를 입력하세요..."
+                                autocomplete="off"
+                            />
+                            <button class="chatbot-send-btn" id="chatbotSend">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', chatbotHTML);
+        }
+
+        setupEventListeners() {
+            const toggleBtn = document.getElementById('chatbotToggle');
+            const closeBtn = document.getElementById('chatbotClose');
+            const sendBtn = document.getElementById('chatbotSend');
+            const input = document.getElementById('chatbotInput');
+
+            toggleBtn.addEventListener('click', () => this.toggle());
+            closeBtn.addEventListener('click', () => this.close());
+            sendBtn.addEventListener('click', () => this.sendMessage());
+
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.sendMessage();
+                }
+            });
+        }
+
+        toggle() {
+            this.isOpen = !this.isOpen;
+            const container = document.getElementById('chatbotContainer');
+            container.classList.toggle('active', this.isOpen);
+
+            if (this.isOpen) {
+                document.getElementById('chatbotInput').focus();
+                this.scrollToBottom();
+            }
+        }
+
+        close() {
+            this.isOpen = false;
+            document.getElementById('chatbotContainer').classList.remove('active');
+        }
+
+        getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        this.userLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        console.log('위치 정보 획득:', this.userLocation);
+                    },
+                    (error) => {
+                        console.warn('위치 정보를 가져올 수 없습니다:', error);
+                        this.userLocation = null;
+                    }
+                );
+            }
+        }
+
+        async sendMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // 사용자 메시지 표시
+            this.addMessage('user', message);
+            input.value = '';
+
+            // 로딩 표시
+            this.showLoading();
+
+            try {
+                const response = await fetch('/api/chatbot/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        latitude: this.userLocation?.latitude,
+                        longitude: this.userLocation?.longitude
+                    })
+                });
+
+                this.hideLoading();
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.addMessage('bot', data.message, data.recommendedStudies);
+                } else {
+                    this.addMessage('bot', '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.');
+                }
+            } catch (error) {
+                console.error('챗봇 오류:', error);
+                this.hideLoading();
+                this.addMessage('bot', '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            }
+        }
+
+        addMessage(type, text, studies = null) {
+            const messagesContainer = document.getElementById('chatbotMessages');
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chatbot-message ${type}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${type}`;
+            avatar.textContent = type === 'bot' ? '🤖' : '👤';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+
+            // 추천 스터디가 있으면 추가
+            if (studies && studies.length > 0) {
+                const studiesDiv = document.createElement('div');
+                studiesDiv.className = 'recommended-studies';
+
+                studies.forEach(study => {
+                    const card = document.createElement('div');
+                    card.className = 'study-card';
+                    card.onclick = () => {
+                        window.location.href = `/study/detail/${study.id}`;
+                    };
+
+                    card.innerHTML = `
+                        <div class="study-card-title">${study.title}</div>
+                        <div class="study-card-desc">${study.description || '설명 없음'}</div>
+                        <div class="study-card-distance">📍 약 ${study.distance.toFixed(1)}km 거리</div>
+                    `;
+
+                    studiesDiv.appendChild(card);
+                });
+
+                content.appendChild(studiesDiv);
+            }
+
+            messagesContainer.appendChild(messageDiv);
+            this.scrollToBottom();
+        }
+
+        showLoading() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chatbot-message bot';
+            loadingDiv.id = 'chatbot-loading';
+
+            loadingDiv.innerHTML = `
+                <div class="message-avatar bot">🤖</div>
+                <div class="message-content">
+                    <div class="chatbot-loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(loadingDiv);
+            this.scrollToBottom();
+        }
+
+        hideLoading() {
+            const loading = document.getElementById('chatbot-loading');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        scrollToBottom() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+
+    // 페이지 로드 시 챗봇 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+        new Chatbot();
     });
 </script>
 </body>

@@ -17,4 +17,10 @@ public class StudyDto {
     private LocalDateTime createdAt;
     private String status;
     private String role;
+
+    // 챗봇용 추가 필드
+    private String locationAddress;
+    private Double locationLatitude;
+    private Double locationLongitude;
+    private Double distance; // km 단위 거리
 }
