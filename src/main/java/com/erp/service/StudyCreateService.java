@@ -6,6 +6,7 @@ import com.erp.entity.StudyDetail;
 import com.erp.entity.StudyMember;
 import com.erp.entity.User;
 import com.erp.enums.StudyStatus;
+import com.erp.enums.StudyType;
 import com.erp.repository.StudyDetailRepository;
 import com.erp.repository.StudyMemberRepository;
 import com.erp.repository.StudyRepository;
@@ -30,27 +31,31 @@ public class StudyCreateService {
 
     @Transactional
     public void studyCreate(StudyCreateRequestDto dto, User user) {
-        // 주소가 있는 경우 위도/경도 변환
-        String address = dto.getBaseAddress();
-        String fullAddress = dto.getBaseAddress();
-        if (dto.getDetailAddress() != null && !dto.getDetailAddress().isBlank()) {
-            fullAddress += " " + dto.getDetailAddress();
-        }
 
-        //좌표 변환 (baseAddress만)
         Double latitude = null;
         Double longitude = null;
+        String fullAddress = null;
 
-        if (address != null && !address.trim().isEmpty()) {
-            try {
-                Map<String, Double> coordinates = kakaoMapService.getCoordinates(address);
-                if (coordinates != null) {
-                    latitude = coordinates.get("latitude");
-                    longitude = coordinates.get("longitude");
+        // ✅ OFFLINE 스터디만 주소 & 좌표 처리
+        if (dto.getStudyType() == StudyType.OFFLINE) {
+
+            String address = dto.getBaseAddress();
+            fullAddress = address;
+
+            if (dto.getDetailAddress() != null && !dto.getDetailAddress().isBlank()) {
+                fullAddress += " " + dto.getDetailAddress();
+            }
+
+            if (address != null && !address.isBlank()) {
+                try {
+                    Map<String, Double> coordinates = kakaoMapService.getCoordinates(address);
+                    if (coordinates != null) {
+                        latitude = coordinates.get("latitude");
+                        longitude = coordinates.get("longitude");
+                    }
+                } catch (Exception e) {
+                    log.warn("주소를 좌표로 변환하는데 실패했습니다: {}", address, e);
                 }
-            } catch (Exception e) {
-                // 위도/경도 변환 실패해도 스터디 생성은 계속 진행
-                log.warn("주소를 좌표로 변환하는데 실패했습니다: {}", address, e);
             }
         }
 
@@ -60,6 +65,7 @@ public class StudyCreateService {
                 .maxMembers(dto.getMaxMembers())
                 .createdBy(user)
                 .status(StudyStatus.INPROGRESS)
+                .studyType(dto.getStudyType())
                 .locationAddress(fullAddress)
                 .locationLatitude(latitude)
                 .locationLongitude(longitude)
@@ -68,7 +74,7 @@ public class StudyCreateService {
         Study savedStudy = studyRepository.save(study);
 
         StudyDetail studyDetail = StudyDetail.builder()
-                .study(study)
+                .study(savedStudy)
                 .goal(dto.getGoal())
                 .howToProceed(dto.getHowToProceed())
                 .tools(dto.getTools())
@@ -79,14 +85,15 @@ public class StudyCreateService {
         studyDetailRepository.save(studyDetail);
 
         StudyMember studyMember = StudyMember.builder()
-                .study(study)
+                .study(savedStudy)
                 .user(user)
                 .role("LEADER")
                 .joinedAt(LocalDateTime.now())
                 .build();
+
         studyMemberRepository.save(studyMember);
 
-        // Elasticsearch 인덱싱 추가
+        // ✅ Elasticsearch 인덱싱
         studySearchService.indexStudy(savedStudy);
     }
 }

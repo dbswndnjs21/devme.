@@ -59,6 +59,9 @@ public class StudyDocument {
     @Field(type = FieldType.Keyword)
     private String department;
 
+    @Field(type = FieldType.Keyword)
+    private String studyType;
+
     // Entity -> Document 변환
     public static StudyDocument fromEntity(Study study) {
         return StudyDocument.builder()
@@ -67,6 +70,7 @@ public class StudyDocument {
                 .description(study.getDescription())
                 .maxMembers(study.getMaxMembers())
                 .status(study.getStatus().name())
+                .studyType(study.getStudyType() != null ? study.getStudyType().name() : "OFFLINE")
                 .createdBy(study.getCreatedBy().getId())
                 .createdAt(study.getCreatedAt() != null ? study.getCreatedAt().toLocalDate() : LocalDate.now())
                 .goal(study.getDetail() != null ? study.getDetail().getGoal() : "")

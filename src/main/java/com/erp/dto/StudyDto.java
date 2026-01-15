@@ -1,5 +1,6 @@
 package com.erp.dto;
 
+import com.erp.enums.StudyType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,4 +24,5 @@ public class StudyDto {
     private Double locationLatitude;
     private Double locationLongitude;
     private Double distance; // km 단위 거리
+    private StudyType studyType;
 }

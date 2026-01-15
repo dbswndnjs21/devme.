@@ -10,6 +10,7 @@
 <h1>스터디 생성</h1>
 
 <form id="studyForm">
+
   <label for="name">스터디 이름:</label><br>
   <input type="text" id="name" name="name" required><br>
 
@@ -34,8 +35,20 @@
   <label for="schedule">일정:</label><br>
   <textarea id="schedule" name="schedule" rows="4" cols="50" required></textarea><br>
 
-  <!-- 주소 검색 섹션 -->
-  <label for="address">스터디 장소 (선택사항):</label><br>
+  <!-- ✅ 스터디 타입 선택 -->
+  <label>스터디 방식:</label><br>
+  <label>
+    <input type="radio" name="studyType" value="ONLINE" checked>
+    온라인
+  </label>
+  <label>
+    <input type="radio" name="studyType" value="OFFLINE">
+    오프라인
+  </label>
+  <br><br>
+
+  <!-- 주소 검색 섹션 (오프라인일 때만 의미 있음) -->
+  <label for="address">스터디 장소 (오프라인 선택 시):</label><br>
   <div class="address-group">
     <input type="text" id="address" name="address"
            placeholder="오프라인 스터디인 경우 주소 검색 버튼을 클릭해주세요"
@@ -45,7 +58,7 @@
   <input type="text" id="detailAddress" name="detailAddress"
          placeholder="상세 주소 (건물명, 층수 등)">
 
-
+  <br><br>
   <button type="submit">생성하기</button>
 </form>
 
@@ -58,24 +71,22 @@
   const detailAddressInput = document.getElementById('detailAddress');
   const addressSearchBtn = document.getElementById('addressSearchBtn');
 
-  // 주소 검색 기능
-  addressSearchBtn.addEventListener('click', function() {
-    new daum.Postcode({
-      oncomplete: function(data) {
-        // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
-        var addr = ''; // 주소 변수
+  // 스터디 타입 라디오 버튼
+  const studyTypeRadios = document.getElementsByName('studyType');
 
-        //사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-        if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+  // 주소 검색 기능
+  addressSearchBtn.addEventListener('click', function () {
+    new daum.Postcode({
+      oncomplete: function (data) {
+        let addr = '';
+
+        if (data.userSelectedType === 'R') {
           addr = data.roadAddress;
-        } else { // 사용자가 지번 주소를 선택했을 경우(J)2
+        } else {
           addr = data.jibunAddress;
         }
 
-        // 선택된 주소를 입력 필드에 넣는다.
         addressInput.value = addr;
-
-        // 상세주소 필드에 포커스를 준다.
         detailAddressInput.focus();
       }
     }).open();
@@ -85,10 +96,11 @@
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    // 기본 주소와 상세주소를 합친다 (주소가 있는 경우에만)
-    // const fullAddress = addressInput.value ?
-    //         (addressInput.value + (detailAddressInput.value ? ' ' + detailAddressInput.value : '')) :
-    //         null;
+    // 선택된 스터디 타입
+    let studyType;
+    studyTypeRadios.forEach(radio => {
+      if (radio.checked) studyType = radio.value;
+    });
 
     const data = {
       name: document.getElementById('name').value,
@@ -99,8 +111,13 @@
       tools: document.getElementById('tools').value,
       rules: document.getElementById('rules').value,
       schedule: document.getElementById('schedule').value,
-      baseAddress: addressInput.value,  //  좌표 변환용 (카카오 API 호출용)
-      detailAddress: detailAddressInput.value //  DB 저장용
+
+      // ✅ 핵심
+      studyType: studyType,
+
+      // 주소는 오프라인일 때만 의미 있음
+      baseAddress: studyType === 'OFFLINE' ? addressInput.value : null,
+      detailAddress: studyType === 'OFFLINE' ? detailAddressInput.value : null
     };
 
     fetch('/api/studyCreate', {
@@ -116,8 +133,8 @@
             })
             .then(msg => {
               resultDiv.innerText = msg;
+              alert(msg);
               form.reset();
-              alert(msg)
               window.location.href = "/";
             })
             .catch(err => {

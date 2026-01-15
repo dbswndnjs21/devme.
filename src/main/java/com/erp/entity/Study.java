@@ -1,6 +1,7 @@
 package com.erp.entity;
 
 import com.erp.enums.StudyStatus;
+import com.erp.enums.StudyType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -70,5 +71,9 @@ public class Study {
      * 스터디 모임 장소 경도 (longitude)
      */
     private Double locationLongitude;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudyType studyType;
 
 }
