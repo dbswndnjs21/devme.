@@ -13,6 +13,11 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.page-title {
+    text-align: center;
+    width: 100%;
+}
+
 /* 테이블 컨테이너 */
 table {
     width: 100%;

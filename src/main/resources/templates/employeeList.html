@@ -3,29 +3,14 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>직원 관리</title>
     <link rel="stylesheet" href="/css/employeeList.css">
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 0.5rem;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        #employeeTable {
-            margin-top: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
-<h1>직원 목록</h1>
+<body class="page">
+<div class="page-wrap">
+<h1 class="page-title" style="text-align:center;">직원 목록</h1>
 
 <table id="employeeTable">
     <thead>
@@ -40,6 +25,7 @@
     <!-- JS로 채워짐 -->
     </tbody>
 </table>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {

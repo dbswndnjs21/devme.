@@ -2,11 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>스터디 생성</title>
   <link rel="stylesheet" href="/css/studyCreate.css">
+  <link rel="stylesheet" href="/css/app.css">
   <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
-<body>
+<body class="page">
 <h1>스터디 생성</h1>
 
 <form id="studyForm">
@@ -37,15 +39,17 @@
 
   <!-- ✅ 스터디 타입 선택 -->
   <label>스터디 방식:</label><br>
-  <label>
-    <input type="radio" name="studyType" value="ONLINE" checked>
-    온라인
-  </label>
-  <label>
-    <input type="radio" name="studyType" value="OFFLINE">
-    오프라인
-  </label>
-  <br><br>
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="studyType" value="ONLINE" checked>
+      온라인
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="studyType" value="OFFLINE">
+      오프라인
+    </label>
+  </div>
+  <br>
 
   <!-- 주소 검색 섹션 (오프라인일 때만 의미 있음) -->
   <label for="address">스터디 장소 (오프라인 선택 시):</label><br>

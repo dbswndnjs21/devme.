@@ -2,19 +2,271 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/home.css">
     <link rel="stylesheet" href="/css/chatbot.css">
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        :root {
+            --bg: #f7f4ef;
+            --bg-strong: #efe9df;
+            --surface: #ffffff;
+            --ink: #1f1f1f;
+            --muted: #5c5b57;
+            --accent: #0c7c6c;
+            --accent-2: #f59e0b;
+            --stroke: #e7dfd4;
+            --shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Manrope", "Noto Sans KR", sans-serif;
+            background:
+                radial-gradient(circle at 20% 20%, #ffffff 0%, #f7f4ef 45%, #efe8dc 100%),
+                linear-gradient(130deg, #fdfbf6 0%, #f2ebe0 100%);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+            gap: 24px;
+            padding: 24px 28px;
+        }
+
+        .sidebar {
+            width: auto;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid var(--stroke);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .brand-title {
+            font-family: "Fraunces", "Noto Serif KR", serif;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-sub {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 12px 14px;
+            background: #f4eee4;
+            border: 1px solid transparent;
+            color: var(--ink);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar button:hover {
+            background: #fff7ea;
+            border-color: #f0d7ad;
+            transform: translateY(-1px);
+        }
+
+        .sidebar button.primary {
+            background: var(--accent);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 10px 20px rgba(12, 124, 108, 0.25);
+        }
+
+        .sidebar button.primary:hover {
+            background: #0b6c5f;
+        }
+
+        .content {
+            flex: 1;
+            background: transparent;
+            padding: 8px 6px 24px 6px;
+        }
+
+        .content-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .content-title {
+            font-family: "Fraunces", "Noto Serif KR", serif;
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .content-sub {
+            color: var(--muted);
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .panel-grid {
+            display: grid;
+            grid-template-columns: minmax(280px, 420px) minmax(360px, 1fr);
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .card-container {
+            margin-top: 0;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .card,
+        .notification-panel {
+            background: var(--surface);
+            border-radius: 18px;
+            border: 1px solid var(--stroke);
+            padding: 22px 24px;
+            box-shadow: var(--shadow);
+            min-height: 220px;
+        }
+
+        .card h3,
+        .notification-panel h3 {
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 1px solid #f2ede3;
+            padding-bottom: 10px;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            margin: 10px 0 0 0;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .card {
+            width: 100%;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fff1d6;
+            color: #a16207;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+            margin-left: 2px;
+        }
+
+        #notificationArea {
+            margin-top: 0;
+            border: none;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #notificationsList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+            flex: 1;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        #notificationsList li {
+            background: #f9f5ef;
+            border: 1px solid #efe2cf;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .chatbot-button,
+        .chatbot-header,
+        .chatbot-send-btn,
+        .message-avatar.bot,
+        .chatbot-message.user .message-content {
+            background: linear-gradient(140deg, #0c7c6c 0%, #0f4c5c 100%);
+        }
+
+        .chatbot-container {
+            border-radius: 22px;
+            box-shadow: 0 24px 60px rgba(12, 12, 12, 0.18);
+        }
+
+        .study-card-title {
+            color: var(--accent);
+        }
+
+        @media (max-width: 980px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 18px;
+            }
+
+            .panel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <!-- 왼쪽 메뉴 영역 -->
     <div class="sidebar">
+        <div class="brand">
+            <div class="brand-title">DevMe ERP</div>
+            <div class="brand-sub">스터디 매칭 · 업무 허브</div>
+        </div>
+
+        <div class="nav-group">
         <!-- 로그인 버튼 -->
         <form id="loginForm" action="/loginForm" method="get">
-            <button type="submit" id="loginButton">로그인</button>
+            <button type="submit" id="loginButton" class="primary">로그인</button>
         </form>
 
         <!-- 로그아웃 버튼 -->
@@ -51,17 +303,27 @@
         <form action="/notifications" method="get">
             <button type="submit">알림함</button>
         </form>
+        </div>
     </div>
 
     <!-- 오른쪽 본문 영역 -->
     <div class="content">
-        <h2>HOME</h2>
-        <div id="userInfo" class="card-container"></div>
+        <div class="content-header">
+            <div>
+                <h2 class="content-title">Dashboard</h2>
+                <div class="content-sub">업무 현황과 스터디 활동을 한눈에 확인하세요.</div>
+            </div>
+        </div>
 
-        <!-- 알림 영역 추가 -->
-        <div id="notificationArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
-            <h3>실시간 알림</h3>
-            <ul id="notificationsList" style="list-style:none; padding-left:0;"></ul>
+        <div class="panel-grid">
+            <div id="userInfo" class="card-container"></div>
+
+            <!-- 알림 영역 추가 -->
+            <div id="notificationArea" class="notification-panel" style="display: none;">
+                <h3>실시간 알림</h3>
+                <div class="chip">LIVE</div>
+                <ul id="notificationsList" style="list-style:none; padding-left:0;"></ul>
+            </div>
         </div>
     </div>
 </div>
@@ -113,6 +375,7 @@
                 `;
 
                 connectWebSocket(data.username); // 로그인 후 웹소켓 연결
+                document.getElementById('notificationArea').style.display = 'flex';
 
                 const loginButton = document.getElementById("loginButton");
                 const loginForm = document.getElementById("loginForm");
@@ -132,6 +395,7 @@
                 loginButton.style.display = "inline";
                 loginForm.style.display = "inline";
                 logoutForm.style.display = "none";
+                document.getElementById('notificationArea').style.display = 'none';
             });
     };
 
