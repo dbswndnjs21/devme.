@@ -3,6 +3,7 @@ package com.erp.service;
 import com.erp.dto.ChatResponse;
 import com.erp.dto.StudyDto;
 import com.erp.entity.Study;
+import com.erp.enums.StudyType;
 import com.erp.repository.StudyRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,75 +23,62 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ChatbotService {
 
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    private static final double EARTH_RADIUS_KM = 6371.0;
+
     private final StudyRepository studyRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${gemini.api.key:}")
+    @Value("${gemini.api.key}")
     private String apiKey;
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
-    private static final double EARTH_RADIUS_KM = 6371.0;
-
+    /**
+     * 사용자의 메시지를 처리하여 AI 답변과 추천 스터디 리스트를 반환합니다.
+     */
     public ChatResponse processMessage(String userMessage, Double latitude, Double longitude,
                                        CustomUserDetails userDetails) {
 
-        // 1. 메시지 분석하여 검색 범위 결정
-        List<StudyDto> studies = new ArrayList<>();
-        String lowerMessage = userMessage.toLowerCase();
-
-        // "근처", "가까운", "주변" 등의 키워드가 있으면 위치 기반 검색
-        boolean isNearbySearch = lowerMessage.contains("근처") ||
-                lowerMessage.contains("가까운") ||
-                lowerMessage.contains("주변") ||
-                lowerMessage.contains("내 위치");
-
-        if (isNearbySearch && latitude != null && longitude != null) {
-            // 위치 기반 검색 (10km 반경)
-            studies = findNearbyStudies(latitude, longitude, 10.0);
-        } else {
-            // 전체 스터디 검색
-            studies = findAllStudies(latitude, longitude);
-        }
+        // 1. 모든 데이터를 가져오고 거리순으로 정렬 (최대 15개로 제한하여 네트워크 오류 방지)
+        List<StudyDto> allStudies = findAllStudies(latitude, longitude);
+        List<StudyDto> matchedStudies = filterStudiesByQuery(allStudies, userMessage);
+        List<StudyDto> candidateStudies = matchedStudies.isEmpty() && !allStudies.isEmpty()
+                ? (extractKeywords(userMessage).isEmpty() ? allStudies : Collections.emptyList())
+                : matchedStudies;
+        List<StudyDto> contextStudies = limitForContext(candidateStudies);
 
         // 2. AI에게 전달할 컨텍스트 생성
-        String context = buildContext(studies, userDetails, isNearbySearch);
+        String context = buildContext(contextStudies, userDetails);
 
-        // 3. Gemini API 호출
-        String aiResponse = callGeminiAPI(userMessage, context);
+        // 3. AI의 역할과 행동 지침 정의 (프롬프트 엔지니어링)
+        String systemInstruction = "당신은 스터디 매칭 플랫폼의 전문 매니저입니다.\n" +
+                "1. 제공된 '컨텍스트' 내의 실제 데이터를 바탕으로 답변하세요.\n" +
+                "2. 사용자가 위치 관련(근처, 가까운 등) 질문을 하면 '거리'가 짧은 스터디를 우선 추천하세요.\n" +
+                "3. 주제 관련(스포츠, 공부 등) 질문을 하면 제목과 설명이 일치하는 것을 우선 추천하세요.\n" +
+                "4. 반드시 '추천 후보' 목록 안에 있는 스터디만 언급하고, 목록이 비어 있으면 없다고 안내하세요.\n" +
+                "5. 목록에 있는 스터디에 대해 '상세 정보가 없다'거나 '업데이트 예정'이라는 말 대신, 제목을 기반으로 긍정적으로 안내하세요.\n" +
+                "6. 친절하고 열정적인 한국어로 답변하세요.";
 
-        // 4. 응답 반환
+        // 4. Gemini API 호출 (작성한 지침과 컨텍스트 전달)
+        String aiResponse = callGeminiAPI(userMessage, context, systemInstruction);
+
+        // 5. 하단 카드 리스트는 상위 3개만 노출
         return ChatResponse.builder()
                 .message(aiResponse)
-                .recommendedStudies(studies.isEmpty() ? null : studies.subList(0, Math.min(3, studies.size())))
+                .recommendedStudies(contextStudies.isEmpty() ? null :
+                        contextStudies.subList(0, Math.min(3, contextStudies.size())))
                 .build();
-    }
-
-    private List<StudyDto> findNearbyStudies(double userLat, double userLon, double radiusKm) {
-        List<Study> allStudies = studyRepository.findAll();
-
-        return allStudies.stream()
-                .filter(study -> study.getLocationLatitude() != null && study.getLocationLongitude() != null)
-                .map(study -> {
-                    double distance = calculateDistance(userLat, userLon,
-                            study.getLocationLatitude(), study.getLocationLongitude());
-                    return new StudyWithDistance(study, distance);
-                })
-                .filter(sd -> sd.distance <= radiusKm)
-                .sorted(Comparator.comparingDouble(sd -> sd.distance))
-                .limit(10)
-                .map(sd -> convertToDto(sd.study, sd.distance))
-                .collect(Collectors.toList());
     }
 
     private List<StudyDto> findAllStudies(Double userLat, Double userLon) {
         List<Study> allStudies = studyRepository.findAll();
 
-        // 위치 정보가 있으면 거리 계산, 없으면 0으로 설정
         return allStudies.stream()
                 .map(study -> {
-                    double distance = 0.0;
-                    if (userLat != null && userLon != null &&
+                    Double distance = null;
+                    // 오프라인 스터디이고 위치 정보가 있는 경우에만 거리 계산
+                    if (study.getStudyType() == StudyType.OFFLINE &&
+                            userLat != null && userLon != null &&
                             study.getLocationLatitude() != null &&
                             study.getLocationLongitude() != null) {
                         distance = calculateDistance(userLat, userLon,
@@ -98,90 +86,79 @@ public class ChatbotService {
                     }
                     return convertToDto(study, distance);
                 })
-                .limit(20) // 전체 검색은 최대 20개까지
+                // 거리순 정렬 (거리가 가까운 순, 온라인/거리없음은 뒤로)
+                .sorted(Comparator.comparing(StudyDto::getDistance,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
                 .collect(Collectors.toList());
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
-
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
                 * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
     }
 
-    private String buildContext(List<StudyDto> studies, CustomUserDetails userDetails, boolean isNearbySearch) {
+    private String buildContext(List<StudyDto> studies, CustomUserDetails userDetails) {
         StringBuilder context = new StringBuilder();
-
         if (userDetails != null) {
-            context.append("사용자 정보: ").append(userDetails.getUsername()).append("\n\n");
+            context.append("사용자 이름: ").append(userDetails.getUsername()).append("\n\n");
         }
 
         if (!studies.isEmpty()) {
-            if (isNearbySearch) {
-                context.append("근처 스터디 목록:\n");
-            } else {
-                context.append("전체 스터디 목록:\n");
-            }
-
+            context.append("현재 운영 중인 스터디 목록:\n");
             for (int i = 0; i < studies.size(); i++) {
                 StudyDto study = studies.get(i);
-                if (isNearbySearch && study.getDistance() != null && study.getDistance() > 0) {
-                    context.append(String.format("%d. %s - %s (약 %.1fkm 거리)\n",
-                            i + 1,
-                            study.getTitle(),
-                            study.getDescription() != null ? study.getDescription() : "설명 없음",
-                            study.getDistance()));
-                } else {
-                    context.append(String.format("%d. %s - %s\n",
-                            i + 1,
-                            study.getTitle(),
-                            study.getDescription() != null ? study.getDescription() : "설명 없음"));
+                context.append(String.format("- %s: %s", study.getTitle(),
+                        study.getDescription() != null ? study.getDescription() : "함께 성장할 멤버를 모집 중입니다."));
+                if (study.getDistance() != null) {
+                    context.append(String.format(" (거리: %.1fkm)", study.getDistance()));
                 }
+                context.append("\n");
+            }
+            context.append("\n추천 후보(최대 3개, 반드시 이 중에서만 추천):\n");
+            for (int i = 0; i < Math.min(3, studies.size()); i++) {
+                StudyDto study = studies.get(i);
+                context.append(String.format("- %s", study.getTitle()));
+                if (study.getDistance() != null) {
+                    context.append(String.format(" (거리: %.1fkm)", study.getDistance()));
+                }
+                context.append("\n");
             }
         } else {
-            if (isNearbySearch) {
-                context.append("현재 근처에 스터디가 없습니다.\n");
-            } else {
-                context.append("현재 등록된 스터디가 없습니다.\n");
-            }
+            context.append("현재 등록된 스터디 정보가 없습니다.\n");
+            context.append("추천 후보가 없습니다.\n");
         }
-
         return context.toString();
     }
 
-    private String callGeminiAPI(String userMessage, String context) {
-        // API 키가 설정되지 않은 경우 기본 응답 반환
+    private String callGeminiAPI(String userMessage, String context, String systemInstruction) {
         if (apiKey == null || apiKey.isEmpty()) {
-            return generateFallbackResponse(userMessage, context);
+            log.error("Gemini API Key가 설정되지 않았습니다.");
+            return "시스템 설정 오류가 발생했습니다. 관리자에게 문의하세요.";
         }
 
         try {
-            String systemInstruction = "당신은 스터디 매칭 플랫폼의 AI 어시스턴트입니다. " +
-                    "사용자의 질문에 친절하게 답변하고, 적절한 스터디를 추천해주세요. " +
-                    "답변은 간결하고 명확하게 한국어로 작성하세요.";
+            // 외부에서 정의한 systemInstruction과 context, userMessage를 하나로 합침
+            String fullPrompt = systemInstruction + "\n\n[컨텍스트]\n" + context +
+                    "\n\n[사용자 질문]\n" + userMessage;
 
-            String fullPrompt = systemInstruction + "\n\n컨텍스트:\n" + context +
-                    "\n\n사용자 질문: " + userMessage;
-
-            // Gemini API 요청 구조
             Map<String, Object> requestBody = new HashMap<>();
-
-            Map<String, Object> part = new HashMap<>();
-            part.put("text", fullPrompt);
-
+            List<Map<String, Object>> contents = new ArrayList<>();
             Map<String, Object> content = new HashMap<>();
-            content.put("parts", Arrays.asList(part));
+            List<Map<String, Object>> parts = new ArrayList<>();
+            Map<String, Object> part = new HashMap<>();
 
-            requestBody.put("contents", Arrays.asList(content));
+            part.put("text", fullPrompt);
+            parts.add(part);
+            content.put("parts", parts);
+            contents.add(content);
+            requestBody.put("contents", contents);
 
-            // API 키를 URL 파라미터로 추가
             String urlWithKey = GEMINI_API_URL + "?key=" + apiKey;
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -194,60 +171,26 @@ public class ChatbotService {
                     String.class
             );
 
-            // Gemini 응답 파싱
-            JsonNode jsonResponse = objectMapper.readTree(response.getBody());
-            return jsonResponse.path("candidates").get(0)
+            JsonNode root = objectMapper.readTree(response.getBody());
+            return root.path("candidates").get(0)
                     .path("content").path("parts").get(0)
                     .path("text").asText();
 
         } catch (HttpClientErrorException e) {
-            // API 키 오류 또는 할당량 초과
-            if (e.getStatusCode().value() == 400) {
-                log.warn("Gemini API 요청 오류. 기본 응답으로 전환합니다.");
-                return generateFallbackResponse(userMessage, context);
-            } else if (e.getStatusCode().value() == 429) {
-                log.warn("Gemini API 할당량 초과 (Rate Limit). 기본 응답으로 전환합니다.");
-                return generateFallbackResponse(userMessage, context);
-            } else if (e.getStatusCode().value() == 403) {
-                log.warn("Gemini API 권한 오류. 기본 응답으로 전환합니다.");
-                return generateFallbackResponse(userMessage, context);
-            } else {
-                log.error("Gemini API 에러: " + e.getStatusCode(), e);
-                return generateFallbackResponse(userMessage, context);
-            }
+            log.error("API 호출 중 오류 발생: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return "현재 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
         } catch (Exception e) {
-            log.error("Gemini API 호출 실패", e);
-            return generateFallbackResponse(userMessage, context);
+            log.error("알 수 없는 에러 발생", e);
+            return "응답 생성 중 오류가 발생했습니다.";
         }
     }
 
-    private String generateFallbackResponse(String userMessage, String context) {
-        // AI API 사용 불가 시 기본 응답
-        String lowerMessage = userMessage.toLowerCase();
-
-        if (lowerMessage.contains("추천") || lowerMessage.contains("스터디") ||
-                lowerMessage.contains("찾아") || lowerMessage.contains("근처")) {
-
-            if (context.contains("스터디 목록")) {
-                return "스터디를 찾았습니다! 위의 목록을 확인해보세요. " +
-                        "각 스터디의 설명을 참고하여 자신에게 맞는 스터디를 선택하실 수 있습니다.";
-            } else {
-                return "죄송합니다. 현재 조건에 맞는 스터디가 없습니다. " +
-                        "검색 범위를 넓히시거나, 직접 스터디를 만들어보시는 건 어떨까요?";
-            }
-        }
-
-        return "무엇을 도와드릴까요? 다음과 같이 질문해보세요:\n" +
-                "- '내 위치 근처 스터디 추천해줘' (위치 기반 검색)\n" +
-                "- 'Java 스터디 찾아줘' (전체 검색)\n" +
-                "- '온라인 스터디 추천해줘' (전체 검색)";
-    }
-
-    private StudyDto convertToDto(Study study, double distance) {
+    private StudyDto convertToDto(Study study, Double distance) {
         return StudyDto.builder()
                 .id(study.getId())
                 .title(study.getTitle())
                 .description(study.getDescription())
+                .studyType(study.getStudyType())
                 .maxMembers(study.getMaxMembers())
                 .locationAddress(study.getLocationAddress())
                 .locationLatitude(study.getLocationLatitude())
@@ -260,14 +203,57 @@ public class ChatbotService {
                 .build();
     }
 
-    // Helper class
-    private static class StudyWithDistance {
-        Study study;
-        double distance;
-
-        StudyWithDistance(Study study, double distance) {
-            this.study = study;
-            this.distance = distance;
+    private List<StudyDto> limitForContext(List<StudyDto> studies) {
+        if (studies == null || studies.isEmpty()) {
+            return Collections.emptyList();
         }
+        return studies.stream()
+                .limit(15)
+                .collect(Collectors.toList());
+    }
+
+    private List<StudyDto> filterStudiesByQuery(List<StudyDto> studies, String userMessage) {
+        List<String> keywords = extractKeywords(userMessage);
+        if (keywords.isEmpty()) {
+            return studies;
+        }
+        return studies.stream()
+                .filter(study -> matchesKeywords(study, keywords))
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesKeywords(StudyDto study, List<String> keywords) {
+        String title = study.getTitle() != null ? study.getTitle().toLowerCase(Locale.ROOT) : "";
+        String description = study.getDescription() != null ? study.getDescription().toLowerCase(Locale.ROOT) : "";
+        for (String keyword : keywords) {
+            if (title.contains(keyword) || description.contains(keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> extractKeywords(String userMessage) {
+        if (userMessage == null || userMessage.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        Set<String> stopwords = new HashSet<>(Arrays.asList(
+                "스터디", "공부", "찾아줘", "추천", "근처", "가까운", "어디", "어떤", "있어", "있나요", "해줘",
+                "요", "좀", "관련", "원해", "원합니다", "주세요", "가능", "할", "수", "있는", "모집",
+                "하고", "하는", "모임", "찾기", "검색", "알려줘", "알려", "추천해줘", "추천해", "싶어"
+        ));
+
+        String[] tokens = userMessage.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+");
+        List<String> keywords = new ArrayList<>();
+        for (String token : tokens) {
+            if (token.length() < 2) {
+                continue;
+            }
+            if (stopwords.contains(token)) {
+                continue;
+            }
+            keywords.add(token);
+        }
+        return keywords;
     }
 }

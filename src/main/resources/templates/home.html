@@ -297,10 +297,13 @@
 
                 this.hideLoading();
 
-                if (response.ok) {
+                const contentType = response.headers.get('content-type') || '';
+                if (response.ok && contentType.includes('application/json')) {
                     const data = await response.json();
                     this.addMessage('bot', data.message, data.recommendedStudies);
                 } else {
+                    const bodyText = await response.text();
+                    console.warn('챗봇 비정상 응답:', response.status, bodyText.slice(0, 200));
                     this.addMessage('bot', '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.');
                 }
             } catch (error) {
@@ -339,10 +342,14 @@
                         window.location.href = `/study/detail/${study.id}`;
                     };
 
+                    const distanceText = (study.distance !== null && study.distance !== undefined)
+                        ? `📍 약 ${study.distance.toFixed(1)}km 거리`
+                        : '📍 거리 정보 없음';
+
                     card.innerHTML = `
                         <div class="study-card-title">${study.title}</div>
                         <div class="study-card-desc">${study.description || '설명 없음'}</div>
-                        <div class="study-card-distance">📍 약 ${study.distance.toFixed(1)}km 거리</div>
+                        <div class="study-card-distance">${distanceText}</div>
                     `;
 
                     studiesDiv.appendChild(card);
