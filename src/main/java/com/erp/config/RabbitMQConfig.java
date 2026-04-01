@@ -20,10 +20,18 @@ public class RabbitMQConfig {
     public static final String QUEUE_NAME = "notification.queue";
     public static final String EXCHANGE_NAME = "notification.exchange";
     public static final String ROUTING_KEY = "notification.key";
+    public static final String STUDY_OUTBOX_QUEUE_NAME = "study.outbox.queue";
+    public static final String STUDY_OUTBOX_EXCHANGE_NAME = "study.outbox.exchange";
+    public static final String STUDY_OUTBOX_ROUTING_KEY = "study.outbox.key";
 
     @Bean
     public Queue queue() {
         return new Queue(QUEUE_NAME, true); // durable = true
+    }
+
+    @Bean
+    public Queue studyOutboxQueue() {
+        return new Queue(STUDY_OUTBOX_QUEUE_NAME, true);
     }
 
     @Bean
@@ -32,8 +40,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange studyOutboxExchange() {
+        return new DirectExchange(STUDY_OUTBOX_EXCHANGE_NAME);
+    }
+
+    @Bean
     public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding studyOutboxBinding(Queue studyOutboxQueue, DirectExchange studyOutboxExchange) {
+        return BindingBuilder.bind(studyOutboxQueue).to(studyOutboxExchange).with(STUDY_OUTBOX_ROUTING_KEY);
     }
 
     @Bean

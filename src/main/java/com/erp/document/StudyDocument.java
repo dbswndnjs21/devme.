@@ -1,5 +1,6 @@
 package com.erp.document;
 
+import com.erp.dto.StudyOutboxPayload;
 import com.erp.entity.Study;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -76,6 +77,22 @@ public class StudyDocument {
                 .goal(study.getDetail() != null ? study.getDetail().getGoal() : "")
                 .tools(study.getDetail() != null ? study.getDetail().getTools() : "")
                 .department(study.getCreatedBy().getDepartment())
+                .build();
+    }
+
+    public static StudyDocument fromPayload(StudyOutboxPayload payload) {
+        return StudyDocument.builder()
+                .id(payload.getStudyId().toString())
+                .title(payload.getTitle())
+                .description(payload.getDescription())
+                .maxMembers(payload.getMaxMembers() != null ? payload.getMaxMembers() : 0)
+                .status(payload.getStatus() != null ? payload.getStatus().name() : null)
+                .studyType(payload.getStudyType() != null ? payload.getStudyType().name() : null)
+                .createdBy(payload.getCreatedById())
+                .createdAt(LocalDate.now())
+                .goal(payload.getGoal() != null ? payload.getGoal() : "")
+                .tools(payload.getTools() != null ? payload.getTools() : "")
+                .department(null)
                 .build();
     }
 }

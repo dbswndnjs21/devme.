@@ -1,6 +1,7 @@
 package com.erp.service;
 
 import com.erp.dto.StudyCreateRequestDto;
+import com.erp.dto.StudyOutboxPayload;
 import com.erp.entity.Study;
 import com.erp.entity.StudyDetail;
 import com.erp.entity.StudyMember;
@@ -26,8 +27,8 @@ public class StudyCreateService {
     private final StudyRepository studyRepository;
     private final StudyDetailRepository studyDetailRepository;
     private final StudyMemberRepository studyMemberRepository;
-    private final StudySearchService studySearchService;
     private final KakaoMapService kakaoMapService;
+    private final OutboxEventService outboxEventService;
 
     @Transactional
     public void studyCreate(StudyCreateRequestDto dto, User user) {
@@ -93,7 +94,9 @@ public class StudyCreateService {
 
         studyMemberRepository.save(studyMember);
 
-        // ✅ Elasticsearch 인덱싱
-        studySearchService.indexStudy(savedStudy);
+        // 검색 인덱싱과 벡터 저장은 Outbox 기반 비동기 처리로 넘긴다.
+        outboxEventService.saveStudyCreatedEvent(
+                StudyOutboxPayload.from(savedStudy, studyDetail, user)
+        );
     }
 }
